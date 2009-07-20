@@ -1,5 +1,7 @@
 # OAuth client support for Clojure #
 
+This is a pre-release, use at your own risk!
+
 `clj-oauth` provides [OAuth](http://oauth.net) client support for Clojure programs.
 
 
