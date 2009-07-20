@@ -1,0 +1,70 @@
+<project name="clj-oauth" default="deploy">
+
+  <!-- Override these with -Dclojure.jar=... in your Ant invocation. -->
+  <property name="clojure.jar" location="/opt/clojure/clojure.jar"/>
+  <property name="clojure.contrib.jar" location="/opt/clojure-contrib/clojure-contrib.jar"/>
+  
+  <available property="hasclojure" file="${clojure.jar}"/>
+  
+  <!-- Library. -->
+  <property name="src" location="src"/>
+  <property name="lib" location="lib"/>
+  <property name="build" location="classes"/>
+  <property name="jarfile" location="${ant.project.name}.jar"/>
+  <property name="deploy" location="deploy"/>
+ 
+  <target name="init">
+    <tstamp/>
+    <mkdir dir="${build}"/>
+    <mkdir dir="${deploy}"/>
+  </target>
+
+  <target name="clean" description="Remove generated files and directories.">
+    <delete dir="${deploy}"/>
+    <delete dir="${build}"/>
+    <delete file="${jarfile}"/>
+  </target>
+
+  <target name="compile_clojure" depends="init"
+          description="Compile Clojure sources."
+          if="hasclojure">
+    <java classname="clojure.lang.Compile">
+      <classpath>
+        <path location="${src}"/>
+        <path location="${build}"/>
+
+        <path location="${lib}/clj-apache-http.jar"/>
+        <path location="${lib}/commons-logging-1.1.1.jar"/>
+        <path location="${lib}/httpclient-4.0-beta2.jar"/>
+        <path location="${lib}/httpcore-4.0-beta3.jar"/>
+        <path location="${lib}/httpmime-4.0-beta2.jar"/>
+        
+        <path location="${lib}/commons-codec-1.3.jar"/>
+        
+        <path location="${clojure.jar}"/>
+        <path location="${clojure.contrib.jar}"/>
+      </classpath>
+      
+      <sysproperty key="clojure.compile.path" value="${build}"/>
+      <arg value="oauth"/>
+    </java>
+  </target>
+
+  <target name="jar" description="Create jar file." depends="compile_clojure">
+    <jar jarfile="${jarfile}">
+      <!-- <fileset dir="${src}" includes="**/*.clj"/> -->
+      <fileset dir="${build}" includes="**/*.class"/>
+      <manifest>
+        <attribute name="Class-Path" value="."/>
+      </manifest>
+    </jar>
+  </target>
+  
+  <target name="deploy" description="Copy appropriate jar files to one place."
+    depends="jar">
+    <copy todir="${deploy}" verbose="true" file="${jarfile}"/>
+    <copy todir="${deploy}" verbose="true">
+      <fileset dir="${lib}" includes="*.jar"/>
+    </copy>
+  </target>
+</project>

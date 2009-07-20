@@ -1,0 +1,41 @@
+(ns 
+    #^{:author "Matt Revelle"
+       :doc "OAuth library for Clojure"} 
+  oauth.client
+  (:require [com.twinql.clojure.http :as http]))
+
+(defstruct #^{:doc "OAuth consumer"} consumer
+  :key
+  :secret
+  :site)
+
+(defn make-consumer
+  "Make a consumer struct map."
+  [key secret site]
+  (struct consumer 
+          key
+          secret))
+
+(defn request-token
+  "Fetch request token for the consumer."
+  [consumer]
+  (let [response (http/get (request-uri (:site consumer))
+                           :as :string)]
+    response))
+
+(defn access-token 
+  "Exchange a request token for an access token."
+  [request-token access-uri]
+  )
+
+(defn request-uri
+  [site]
+  (str site "/oauth/request_token"))
+
+(defn access-uri
+  [site]
+  (str site "/oauth/access_token"))
+
+(defn authorize-uri
+  [site]
+  (str site "/oauth/authorize"))
