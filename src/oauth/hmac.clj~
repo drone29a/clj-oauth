@@ -1,0 +1,4 @@
+(ns oath.hmac
+  (:import (javax.crypto Mac)
+           (javax.crypto.spec SecretKeySpec)))
+
