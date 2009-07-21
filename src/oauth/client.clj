@@ -33,6 +33,14 @@
           authorize-uri 
           signature-method))
 
+;;; Parse form-encoded bodies from OAuth responses.
+(defmethod http/entity-as :urldecoded [entity as]
+  (into {}
+        (map (fn [kv]
+               (let [[k v] (re-split #"=" kv)]
+                 [(keyword k) v]))
+             (re-split #"&" (http/entity-as entity :string)))))
+
 (defn request-token
   "Fetch request token for the consumer."
   [consumer]
@@ -40,15 +48,12 @@
         params (assoc unsigned-params :oauth_signature (sign consumer 
                                                              (base-string "POST" 
                                                                           (:request-uri consumer)
-                                                                          unsigned-params)))
-        response (http/post (:request-uri consumer)
-                            :query params
-                            :parameters (http/map->params {:use-expect-continue false})
-                            :as :string)]
-    (into {} (map (fn [kv] 
-                    (let [[k v] (re-split #"=" kv)]
-                      [(keyword k) v])) 
-                  (re-split #"&" (:content response))))))
+                                                                          unsigned-params)))]
+    (:content
+      (http/post (:request-uri consumer)
+                 :query params
+                 :parameters (http/map->params {:use-expect-continue false})
+                 :as :urldecoded))))
 
 (defn user-approval-uri
   "Builds the URI to the Service Provider where the User will be prompted
@@ -66,16 +71,12 @@ to approve the Consumer's access to their account."
                  :oauth_signature (sign consumer
                                         (base-string "POST" 
                                                      (:access-uri consumer)
-                                                     unsigned-params)))
-        response (http/post (:access-uri consumer)
-                            :query params
-                            :parameters (http/map->params {:use-expect-continue false})
-                            :as :string)]
-    (println (:content response))
-    (into {} (map (fn [kv] 
-                    (let [[k v] (re-split #"=" kv)]
-                      [(keyword k) v])) 
-                  (re-split #"&" (:content response))))))
+                                                     unsigned-params)))]
+    (:content
+      (http/post (:access-uri consumer)
+                 :query params
+                 :parameters (http/map->params {:use-expect-continue false})
+                 :as :urldecoded))))
 
 (defn credentials
   "Return authorization credentials needed for access to protected resources.  
