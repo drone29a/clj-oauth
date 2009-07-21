@@ -1,3 +1,0 @@
-(ns tests
-  (:require [oauth.client])
-  (:use clojure.test))
