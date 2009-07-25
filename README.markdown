@@ -44,5 +44,5 @@ This is a pre-release, use at your own risk!
     ;; ...with clojure-twitter (http://github.com/mattrepl/clojure-twitter)
     (require 'twitter)
     
-    (with-oauth consumer access-token
-        (twitter/update-status "using clj-oauth with clojure-twitter"))
+    (twitter/with-oauth consumer access-token
+                        (twitter/update-status "using clj-oauth with clojure-twitter"))
