@@ -96,9 +96,9 @@ Authorization HTTP header or added as query parameters to the request."
 (defn authorization-header
   "OAuth credentials formatted for the Authorization HTTP header."
   [realm credentials]
-  (str "OAuth " (str-join "\n" (map (fn [[k v]] 
-                                      (str (as-str k) "=\"" v "\""))
-                                    (assoc credentials :realm realm)))))
+  (str "OAuth " (str-join "," (map (fn [[k v]] 
+                                     (str (as-str k) "=\"" v "\""))
+                                   (assoc credentials :realm realm)))))
 
 (defn rand-str
   "Random string for OAuth requests."
