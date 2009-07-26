@@ -1,14 +1,22 @@
 # OAuth Consumer support for Clojure #
 
-This is a pre-release, use at your own risk!
+`clj-oauth` provides [OAuth](http://oauth.net) Consumer support for Clojure programs.
 
-`clj-oauth` provides [OAuth](http://oauth.net) consumer support for Clojure programs.
+The library depends on Richard Newman's [clj-apache-http](http://github.com/rnewman/clj-apache-http) which includes Apache's
+HTTP components.  The Apache Commons Codec library is also required.  All dependencies
+are included in `lib` directory of the repository.
 
+# Building #
+
+`ant -Dclojure.jar="..." -Dclojure.contrib.jar="..."`
 
 # Example #
 
     (require ['oauth.client :as 'oauth])
     
+    ;; Create a Consumer, in this case one to access Twitter.
+    ;; Register an application at Twitter (http://twitter.com/oauth_clients/new)
+    ;; to obtain a Consumer token and token secret.
     (def consumer (oauth/make-consumer <consumer-token>
                                        <consumer-token-secret>
                                        "http://twitter.com/oauth/request_token"
@@ -16,19 +24,25 @@ This is a pre-release, use at your own risk!
                                        "http://twitter.com/oauth/authorize"
                                        :hmac-sha1))
 
-    ;; Fetch request token
+    ;; Fetch a request token that a OAuth User may authorize
     (def request-token (:oauth_token (oauth/request-token consumer)))
 
-    ;; Redirect the OAuth User to this URI for authorization
-    (def approval-uri (oauth/user-approval-uri consumer 
-                                               request-token
-                                               <callback-uri>))
+    ;; Send the User to this URI for authorization, they will be able 
+    ;; to choose the level of access to grant the application and will
+    ;; then be redirected to the callback URI provided.
+    (oauth/user-approval-uri consumer 
+                             request-token
+                             <callback-uri>)
 
-    ;; Assuming the User has approved the request token, trade it for an access token
+    ;; Assuming the User has approved the request token, trade it for an access token.
+    ;; The access token will then be used when accessing protected resources for the User.
     (def access-token (:oauth_token (oauth/access-token consumer
                                                         request-token)))
 
-    ;; The access token may be used with our other Consumer credentials to authorize requests
+    ;; Each request to a protected resource must be signed individually.  The
+    ;; credentials are returned as a map of all OAuth parameters that must be
+    ;; included with the request as either query parameters or in an
+    ;; Authorization HTTP header.
     (def credentials (oauth/credentials consumer
                                         access-token
                                         :POST
