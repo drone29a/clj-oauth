@@ -60,3 +60,11 @@ are included in `lib` directory of the repository.
     
     (twitter/with-oauth consumer access-token
                         (twitter/update-status "using clj-oauth with clojure-twitter"))
+
+# Authors #
+
+Development funded by LikeStream LLC (Don Jackson and Shirish Andhare), see [http://www.likestream.org/opensource].
+
+Designed and developed by Matt Revelle of [Lightpost Software](http://lightpostsoftware.com).
+
+Contributions from Richard Newman.
