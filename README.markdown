@@ -62,7 +62,7 @@ are included in `lib` directory of the repository.
     (require 'twitter)
     
     (twitter/with-oauth oauth-consumer access-token token-secret
-                        (twitter/update-status "using clj-oauth with clojure-twitter"))
+      (twitter/update-status "using clj-oauth with clojure-twitter"))
 
 # Authors #
 
