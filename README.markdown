@@ -17,37 +17,38 @@ are included in `lib` directory of the repository.
     ;; Create a Consumer, in this case one to access Twitter.
     ;; Register an application at Twitter (http://twitter.com/oauth_clients/new)
     ;; to obtain a Consumer token and token secret.
-    (def consumer (oauth/make-consumer <consumer-token>
-                                       <consumer-token-secret>
-                                       "http://twitter.com/oauth/request_token"
-                                       "http://twitter.com/oauth/access_token"
-                                       "http://twitter.com/oauth/authorize"
-                                       :hmac-sha1))
+    (def oauth-consumer (oauth/make-consumer
+                          <consumer-token>
+                          <consumer-token-secret>
+                          "http://twitter.com/oauth/request_token"
+                          "http://twitter.com/oauth/access_token"
+                          "http://twitter.com/oauth/authorize"
+                          :hmac-sha1))
 
     ;; Fetch a request token that a OAuth User may authorize
-    (def request-token (:oauth_token (oauth/request-token consumer)))
+    (def request-token (:oauth_token (oauth/request-token oauth-consumer)))
 
     ;; Send the User to this URI for authorization, they will be able 
     ;; to choose the level of access to grant the application and will
     ;; then be redirected to the callback URI provided.
-    (oauth/user-approval-uri consumer 
+    (oauth/user-approval-uri oauth-consumer 
                              request-token
                              <callback-uri>)
 
     ;; Assuming the User has approved the request token, trade it for an access token.
     ;; The access token will then be used when accessing protected resources for the User.
-    (def access-token (:oauth_token (oauth/access-token consumer
+    (def access-token (:oauth_token (oauth/access-token oauth-consumer
                                                         request-token)))
 
     ;; Each request to a protected resource must be signed individually.  The
     ;; credentials are returned as a map of all OAuth parameters that must be
     ;; included with the request as either query parameters or in an
     ;; Authorization HTTP header.
-    (def credentials (oauth/credentials consumer
+    (def credentials (oauth/credentials oauth-consumer
                                         access-token
                                         :POST
                                         "http://twitter.com/statuses/update.json"
-                                        {:status "posting from #clojure with #oauth")))
+                                        {:status "posting from #clojure with #oauth"))
 
     ;; Post with clj-apache-http, or...
     (http/post "http://twitter.com/statuses/update.json" 
@@ -58,7 +59,7 @@ are included in `lib` directory of the repository.
     ;; ...with clojure-twitter (http://github.com/mattrepl/clojure-twitter)
     (require 'twitter)
     
-    (twitter/with-oauth consumer access-token
+    (twitter/with-oauth oauth-consumer access-token
                         (twitter/update-status "using clj-oauth with clojure-twitter"))
 
 # Authors #
