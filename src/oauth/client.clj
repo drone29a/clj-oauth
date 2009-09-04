@@ -22,6 +22,17 @@
   :authorize-uri
   :signature-method)
 
+(defn check-success-response [m]
+  (let [code (:code m)]
+    (if (or (< code 200)
+              (>= code 300))
+      (throw (new Exception (str "Got non-success response " code ".")))
+      m)))
+
+(defn success-content [m]
+  (:content
+     (check-success-response m)))
+
 (defn make-consumer
   "Make a consumer struct map."
   [key secret request-uri access-uri authorize-uri signature-method]
@@ -49,7 +60,7 @@
                                                              (base-string "POST" 
                                                                           (:request-uri consumer)
                                                                           unsigned-params)))]
-    (:content
+    (success-content
       (http/post (:request-uri consumer)
                  :query params
                  :parameters (http/map->params {:use-expect-continue false})
@@ -72,7 +83,7 @@ to approve the Consumer's access to their account."
                                         (base-string "POST" 
                                                      (:access-uri consumer)
                                                      unsigned-params)))]
-    (:content
+    (success-content
       (http/post (:access-uri consumer)
                  :query params
                  :parameters (http/map->params {:use-expect-continue false})
