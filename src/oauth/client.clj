@@ -75,19 +75,29 @@ to approve the Consumer's access to their account."
                                 :oauth_callback callback-uri})))
 
 (defn access-token 
-  "Exchange a request token for an access token."
-  [consumer request-token]
-  (let [unsigned-params (oauth-params consumer request-token)
-        params (assoc unsigned-params 
-                 :oauth_signature (sign consumer
-                                        (base-string "POST" 
-                                                     (:access-uri consumer)
-                                                     unsigned-params)))]
-    (success-content
-      (http/post (:access-uri consumer)
-                 :query params
-                 :parameters (http/map->params {:use-expect-continue false})
-                 :as :urldecoded))))
+  "Exchange a request token for an access token.
+  When provided with two arguments, this function operates as per OAuth 1.0.
+  With three arguments, a verifier is used:
+  
+      http://wiki.oauth.net/Signed-Callback-URLs
+  
+  This allows Twitter's PIN pass-back:
+  
+      http://apiwiki.twitter.com/Authentication"
+  ([consumer request-token]
+   (access-token consumer request-token nil))
+  ([consumer request-token verifier]
+   (let [unsigned-params (oauth-params consumer request-token verifier)
+         params (assoc unsigned-params 
+                       :oauth_signature (sign consumer
+                                              (base-string "POST" 
+                                                           (:access-uri consumer)
+                                                           unsigned-params)))]
+     (success-content
+       (http/post (:access-uri consumer)
+                  :query params
+                  :parameters (http/map->params {:use-expect-continue false})
+                  :as :urldecoded)))))
 
 (defn credentials
   "Return authorization credentials needed for access to protected resources.  
@@ -149,5 +159,10 @@ Authorization HTTP header or added as query parameters to the request."
       :oauth_nonce (rand-str 30)
       :oauth_version "1.0"})
   ([consumer token]
-     (assoc (oauth-params consumer) 
-       :oauth_token token)))
+   (assoc (oauth-params consumer) 
+          :oauth_token token))
+  ([consumer token verifier]
+   (if verifier
+     (assoc (oauth-params consumer token)
+            :oauth_verifier verifier)
+     (oauth-params consumer token))))
