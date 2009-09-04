@@ -37,8 +37,9 @@ are included in `lib` directory of the repository.
 
     ;; Assuming the User has approved the request token, trade it for an access token.
     ;; The access token will then be used when accessing protected resources for the User.
-    (def access-token (:oauth_token (oauth/access-token oauth-consumer
-                                                        request-token)))
+    (let [a-t (oauth/access-token oauth-consumer request-token)]
+      (def access-token (:oauth_token a-t)) 
+      (def token-secret (:oauth_token_secret a-t)))
 
     ;; Each request to a protected resource must be signed individually.  The
     ;; credentials are returned as a map of all OAuth parameters that must be
@@ -46,6 +47,7 @@ are included in `lib` directory of the repository.
     ;; Authorization HTTP header.
     (def credentials (oauth/credentials oauth-consumer
                                         access-token
+                                        token-secret
                                         :POST
                                         "http://twitter.com/statuses/update.json"
                                         {:status "posting from #clojure with #oauth"))
@@ -59,7 +61,7 @@ are included in `lib` directory of the repository.
     ;; ...with clojure-twitter (http://github.com/mattrepl/clojure-twitter)
     (require 'twitter)
     
-    (twitter/with-oauth oauth-consumer access-token
+    (twitter/with-oauth oauth-consumer access-token token-secret
                         (twitter/update-status "using clj-oauth with clojure-twitter"))
 
 # Authors #

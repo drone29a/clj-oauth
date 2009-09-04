@@ -103,7 +103,7 @@ to approve the Consumer's access to their account."
   "Return authorization credentials needed for access to protected resources.  
 The key-value pairs returned as a map will need to be added to the 
 Authorization HTTP header or added as query parameters to the request."
-  [consumer token request-method request-uri & [request-params]]
+  [consumer token token-secret request-method request-uri & [request-params]]
   (let [unsigned-oauth-params (oauth-params consumer token)
         unsigned-params (merge request-params 
                                unsigned-oauth-params)]
@@ -112,7 +112,8 @@ Authorization HTTP header or added as query parameters to the request."
                                                                          as-str
                                                                          upper-case)
                                                                      request-uri
-                                                                     unsigned-params)))))
+                                                                     unsigned-params)
+                                                        token-secret))))
 
 (defn authorization-header
   "OAuth credentials formatted for the Authorization HTTP header."
@@ -133,9 +134,10 @@ Authorization HTTP header or added as query parameters to the request."
   [method base-url params]
   (str-join "&" [method
                  (url-encode base-url) 
-                 (url-encode (str-join "&" (map (fn [[k v]]
-                                                    (str (name k) "=" v))
-                                                  (sort params))))]))
+                 (url-encode
+                   (str-join "&" (map (fn [[k v]]
+                                        (str (name k) "=" v))
+                                      (sort params))))]))
 
 (defmulti sign 
   "Sign a base string for authentication."
