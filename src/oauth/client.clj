@@ -84,8 +84,8 @@ The key-value pairs returned as a map will need to be added to the
 Authorization HTTP header or added as query parameters to the request."
   [consumer token request-method request-uri & [request-params]]
   (let [unsigned-oauth-params (oauth-params consumer token)
-        unsigned-params (merge request-params 
-                               unsigned-oauth-params)]
+        unsigned-params (sort (merge request-params 
+                                     unsigned-oauth-params))]
     (assoc unsigned-oauth-params :oauth_signature (sign consumer
                                                         (base-string (-> request-method
                                                                          as-str
