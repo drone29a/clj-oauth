@@ -37,7 +37,8 @@ are included in `lib` directory of the repository.
 
     ;; Assuming the User has approved the request token, trade it for an access token.
     ;; The access token will then be used when accessing protected resources for the User.
-    (let [a-t (oauth/access-token oauth-consumer request-token)]
+    ;; Pass in the PIN we got from the approval URI.
+    (let [a-t (oauth/access-token oauth-consumer request-token "1111111")]
       (def access-token (:oauth_token a-t)) 
       (def token-secret (:oauth_token_secret a-t)))
 
