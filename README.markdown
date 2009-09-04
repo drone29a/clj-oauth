@@ -36,29 +36,32 @@ are included in `lib` directory of the repository.
 
     ;; Assuming the User has approved the request token, trade it for an access token.
     ;; The access token will then be used when accessing protected resources for the User.
-    (def access-token (:oauth_token (oauth/access-token consumer
-                                                        request-token)))
+    (def access-token-response (:oauth_token (oauth/access-token consumer
+                                                                 request-token)))
 
     ;; Each request to a protected resource must be signed individually.  The
     ;; credentials are returned as a map of all OAuth parameters that must be
     ;; included with the request as either query parameters or in an
     ;; Authorization HTTP header.
     (def credentials (oauth/credentials consumer
-                                        access-token
+                                        (:oauth_token access-token-response)
+                                        (:oauth_token_secret access-token-response)
                                         :POST
                                         "http://twitter.com/statuses/update.json"
                                         {:status "posting from #clojure with #oauth")))
 
-    ;; Post with clj-apache-http, or...
+    ;; Post with clj-apache-http...
     (http/post "http://twitter.com/statuses/update.json" 
                :query (merge credentials 
                              {:status "posting from #clojure with #oauth"})
                :parameters (http/map->params {:use-expect-continue false})))
                                          
-    ;; ...with clojure-twitter (http://github.com/mattrepl/clojure-twitter)
+    ;; ...or with clojure-twitter (http://github.com/mattrepl/clojure-twitter)
     (require 'twitter)
     
-    (twitter/with-oauth consumer access-token
+    (twitter/with-oauth consumer 
+                        (:oauth_token access-token-response)            
+                        (:oauth_token_secret access-token-response)
                         (twitter/update-status "using clj-oauth with clojure-twitter"))
 
 # Authors #
