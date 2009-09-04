@@ -82,16 +82,17 @@ to approve the Consumer's access to their account."
   "Return authorization credentials needed for access to protected resources.  
 The key-value pairs returned as a map will need to be added to the 
 Authorization HTTP header or added as query parameters to the request."
-  [consumer token request-method request-uri & [request-params]]
+  [consumer token token-secret request-method request-uri & [request-params]]
   (let [unsigned-oauth-params (oauth-params consumer token)
-        unsigned-params (sort (merge request-params 
-                                     unsigned-oauth-params))]
+        unsigned-params (merge request-params 
+                               unsigned-oauth-params)]
     (assoc unsigned-oauth-params :oauth_signature (sign consumer
                                                         (base-string (-> request-method
                                                                          as-str
                                                                          upper-case)
                                                                      request-uri
-                                                                     unsigned-params)))))
+                                                                     unsigned-params)
+                                                        token-secret))))
 
 (defn authorization-header
   "OAuth credentials formatted for the Authorization HTTP header."
