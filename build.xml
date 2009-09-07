@@ -61,7 +61,7 @@
   </target>
   
   <target name="deploy" description="Copy appropriate jar files to one place."
-    depends="jar">
+    depends="clean,jar">
     <copy todir="${deploy}" verbose="true" file="${jarfile}"/>
     <copy todir="${deploy}" verbose="true">
       <fileset dir="${lib}" includes="*.jar"/>
