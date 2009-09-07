@@ -114,8 +114,8 @@ Authorization HTTP header or added as query parameters to the request."
   (str-join "&" [method
                  (url-encode base-url) 
                  (url-encode (str-join "&" (map (fn [[k v]]
-                                                    (str (name k) "=" v))
-                                                  (sort params))))]))
+                                                  (str (name k) "=" v))
+                                                (sort params))))]))
 
 (defmulti sign 
   "Sign a base string for authentication."
@@ -127,8 +127,13 @@ Authorization HTTP header or added as query parameters to the request."
     (digest/hmac key base-string)))
 
 (defn url-encode
+  "The java.net.URLEncoder class encodes for application/x-www-form-urlencoded, but OAuth
+requires RFC 3986 encoding."
   [s]
-  (java.net.URLEncoder/encode s "UTF-8"))
+  (-> (java.net.URLEncoder/encode s "UTF-8")
+    (.replace "+" "%20")
+    (.replace "*" "%2A")
+    (.replace "%7E" "~")))
 
 (defn oauth-params
   "Build a map of parameters needed for OAuth requests."
