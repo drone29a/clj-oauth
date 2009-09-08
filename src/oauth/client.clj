@@ -59,10 +59,13 @@
 (defn user-approval-uri
   "Builds the URI to the Service Provider where the User will be prompted
 to approve the Consumer's access to their account."
-  [consumer token callback-uri]
-  (.toString (http/resolve-uri (:authorize-uri consumer) 
-                               {:oauth_token token
-                                :oauth_callback callback-uri})))
+  ([consumer token]
+     (.toString (http/resolve-uri (:authorize-uri consumer) 
+                                  {:oauth_token token})))
+  ([consumer token callback-uri]
+     (.toString (http/resolve-uri (:authorize-uri consumer) 
+                                  {:oauth_token token
+                                   :oauth_callback callback-uri}))))
 
 (defn access-token 
   "Exchange a request token for an access token.
