@@ -12,7 +12,8 @@
          base-string
          sign
          url-encode
-         oauth-params)
+         oauth-params
+         success-content)
 
 (defstruct #^{:doc "OAuth consumer"} consumer
   :key
@@ -49,7 +50,7 @@
                                                              (base-string "POST" 
                                                                           (:request-uri consumer)
                                                                           unsigned-params)))]
-    (:content
+    (success-content
       (http/post (:request-uri consumer)
                  :query params
                  :parameters (http/map->params {:use-expect-continue false})
@@ -64,19 +65,29 @@ to approve the Consumer's access to their account."
                                 :oauth_callback callback-uri})))
 
 (defn access-token 
-  "Exchange a request token for an access token."
-  [consumer request-token]
-  (let [unsigned-params (oauth-params consumer request-token)
-        params (assoc unsigned-params 
-                 :oauth_signature (sign consumer
-                                        (base-string "POST" 
-                                                     (:access-uri consumer)
-                                                     unsigned-params)))]
-    (:content
-      (http/post (:access-uri consumer)
-                 :query params
-                 :parameters (http/map->params {:use-expect-continue false})
-                 :as :urldecoded))))
+  "Exchange a request token for an access token.
+  When provided with two arguments, this function operates as per OAuth 1.0.
+  With three arguments, a verifier is used:
+
+      http://wiki.oauth.net/Signed-Callback-URLs
+
+  This allows Twitter's PIN pass-back:
+
+      http://apiwiki.twitter.com/Authentication"
+  ([consumer request-token]
+     (access-token consumer request-token nil))
+  ([consumer request-token verifier]
+     (let [unsigned-params (oauth-params consumer request-token verifier)
+           params (assoc unsigned-params
+                    :oauth_signature (sign consumer
+                                           (base-string "POST"
+                                                        (:access-uri consumer)
+                                                        unsigned-params)))]
+       (success-content
+        (http/post (:access-uri consumer)
+                   :query params
+                   :parameters (http/map->params {:use-expect-continue false})
+                   :as :urldecoded)))))
 
 (defn credentials
   "Return authorization credentials needed for access to protected resources.  
@@ -145,4 +156,19 @@ requires RFC 3986 encoding."
       :oauth_version "1.0"})
   ([consumer token]
      (assoc (oauth-params consumer) 
-       :oauth_token token)))
+       :oauth_token token))
+  ([consumer token verifier]
+     (if verifier
+       (assoc (oauth-params consumer token) :oauth_verifier verifier)
+       (oauth-params consumer token))))
+
+(defn check-success-response [m]
+  (let [code (:code m)]
+    (if (or (< code 200)
+            (>= code 300))
+      (throw (new Exception (str "Got non-success response " code ".")))
+      m)))
+
+(defn success-content [m]
+  (:content
+    (check-success-response m)))
