@@ -3,7 +3,7 @@
        :doc "OAuth client library for Clojure."} 
   oauth.client
   (:require [oauth.digest :as digest]
-            [com.twinql.clojure.http :as http])
+            [cljapatchhttp.http :as http])
   (:use [clojure.contrib.str-utils :only [str-join re-split]]
         [clojure.contrib.str-utils2 :only [upper-case]]
         [clojure.contrib.java-utils :only [as-str]]))
