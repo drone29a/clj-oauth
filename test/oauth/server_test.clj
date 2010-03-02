@@ -73,6 +73,7 @@
   (if (req :oauth-token)
     {
       :status  200
+      :request req
       :headers {"Content-Type" "text/plain"}
       :body    (str "oauth-token=" (req :oauth-token) "&oauth-consumer=" (req :oauth-consumer))}
     {
@@ -101,5 +102,5 @@
       :uri "/photos"
       :scheme :http
       :params {:file "vacation.jpg" :size "original"}
-      :headers { :authorize "OAuth realm=\"http://sp.example.com/\", oauth_consumer_key=\"0685bd9184jfhq22\", oauth_token=\"ad180jjd733klru7\", oauth_signature_method=\"HMAC-SHA1\", oauth_signature=\"wOJIO9A2W5mFwDgiDvZbTSMK%2FPY%3D\", oauth_timestamp=\"137131200\", oauth_nonce=\"4572616e48616d6d65724c61686176\",oauth_version=\"1.0\""}}) :status)))
+      :headers { :authorize "OAuth realm=\"http://sp.example.com/\", oauth_consumer_key=\"dpf43f3p2l4k3l03\", oauth_token=\"nnch734d00sl2jdk\", oauth_signature_method=\"HMAC-SHA1\", oauth_signature=\"tR3%2BTy81lMeYAr%2FFid0kMTYa%2FWM%3D\", oauth_timestamp=\"1191242096\", oauth_nonce=\"kllo9940pd9333jh\",oauth_version=\"1.0\""}}) :status)))
   ))
