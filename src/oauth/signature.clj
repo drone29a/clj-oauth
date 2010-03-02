@@ -59,6 +59,12 @@ requires RFC 3986 encoding."
     (.replace "*" "%2A")
     (.replace "%7E" "~")))
 
+(defn url-decode
+  "The java.net.URLEncoder class encodes for application/x-www-form-urlencoded, but OAuth
+requires RFC 3986 encoding."
+  [s]
+  (java.net.URLDecoder/decode s "UTF-8"))
+
 (defn oauth-params
   "Build a map of parameters needed for OAuth requests."
   ([consumer]
