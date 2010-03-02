@@ -1,16 +1,17 @@
-# OAuth Consumer support for Clojure #
+# OAuth support for Clojure #
 
-`clj-oauth` provides [OAuth](http://oauth.net) Consumer support for Clojure programs.
+`clj-oauth` provides [OAuth](http://oauth.net) Client and Server support for Clojure programs.
 
-The library depends on Richard Newman's [clj-apache-http](http://github.com/rnewman/clj-apache-http) which includes Apache's
-HTTP components.  The Apache Commons Codec library is also required.  All dependencies
-are included in `lib` directory of the repository.
+The client part of the library depends on Richard Newman's [clj-apache-http](http://github.com/rnewman/clj-apache-http) which includes Apache's
+HTTP components.
+
+The server support makes it simple to add oauth support to any [ring](http://github.com/mmcgrana/ring) based web applications such as Compojure.
 
 # Building #
 
-`ant -Dclojure.jar="..." -Dclojure.contrib.jar="..."`
+`lein deps`
 
-# Example #
+# Client Example #
 
     (require ['oauth.client :as 'oauth])
     
@@ -72,6 +73,10 @@ are included in `lib` directory of the repository.
                         (:oauth_token_secret access-token-response)
                         (twitter/update-status "using clj-oauth with clojure-twitter"))
 
+# Server support #
+
+The server support is implemented as ring middleware. It depends on params middleware already having been run upstream.
+
 # Authors #
 
 Development funded by LikeStream LLC (Don Jackson and Shirish Andhare), see [http://www.likestream.org/opensource](http://www.likestream.org/opensource).
@@ -79,3 +84,5 @@ Development funded by LikeStream LLC (Don Jackson and Shirish Andhare), see [htt
 Designed and developed by Matt Revelle of [Lightpost Software](http://lightpostsoftware.com).
 
 Contributions from Richard Newman.
+
+Server implementation by Pelle Braendgaard of [Stake Ventures](http://stakeventures.com)
