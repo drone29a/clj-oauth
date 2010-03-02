@@ -12,25 +12,23 @@
          sign
          url-encode
          oauth-params
-         success-content)
+)
+(def secure-random (java.security.SecureRandom/getInstance "SHA1PRNG"))
 
-(defn rand-str
+(defn rand-str 
   "Random string for OAuth requests."
   [length]
-  (let [valid-chars (map char (concat (range 48 58)
-                                      (range 97 123)))
-        rand-char #(nth valid-chars (rand (count valid-chars)))]
-    (apply str (take length (repeatedly rand-char)))))
+  (. (new BigInteger (* 5 length) secure-random) toString 32))
 
 (def signature-methods {:hmac-sha1 "HMAC-SHA1"})
 
 (defn base-string
   ([method base-url c t params]
-    (base-string method base-url (conj params { :oauth_consumer_key (:key c)
+    (base-string method base-url (assoc params :oauth_consumer_key (:key c)
                                                 :oauth_token (:token t)
                                                 :oauth_signature_method (signature-methods (:signature-method c))
                                                 :oauth_version "1.0"
-                                              }))
+                                              ))
   )
   ([method base-url params]
   (str-join "&" [method
