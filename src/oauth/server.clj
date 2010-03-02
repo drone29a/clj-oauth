@@ -17,7 +17,7 @@
           (not (re-find #"^OAuth" auth)))
     nil
     (reduce (fn [v c] (conj c v)) {}  ; I know there has to be a simpler way of doing this
-      (map (fn [x] {(keyword ( x 1)) (x 2)}) 
+      (map (fn [x] {(keyword ( x 1)) (sig/url-decode (x 2))}) 
         (re-seq #"(oauth_[^=, ]+)=\"([^\"]*)\"" auth)))
       )
 )
