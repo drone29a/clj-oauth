@@ -61,7 +61,7 @@
                 {:secret (first secrets) :signature-method :hmac-sha1}
                 (request-base-string request)
                 (last secrets)))
-                (handler (assoc request :oauth-consumer oauth-consumer :oauth-token oauth-token))
+                (handler (assoc request :oauth-consumer oauth-consumer :oauth-token oauth-token)) 
                 (handler request)
               )
          )
