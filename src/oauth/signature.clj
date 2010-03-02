@@ -46,6 +46,10 @@
   (let [key (str (:secret c) "&" (or token-secret ""))]
     (digest/hmac key base-string)))
 
+(defn verify [sig c base-string & [token-secret]]
+  (= sig (sign c base-string token-secret))
+)
+
 (defn url-encode
   "The java.net.URLEncoder class encodes for application/x-www-form-urlencoded, but OAuth
 requires RFC 3986 encoding."
