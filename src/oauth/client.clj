@@ -3,18 +3,13 @@
        :doc "OAuth client library for Clojure."} 
   oauth.client
   (:require [oauth.digest :as digest]
-            [oauth.signature :as signature]
+            [oauth.signature :as sig]
             [com.twinql.clojure.http :as http])
   (:use [clojure.contrib.str-utils :only [str-join re-split]]
         [clojure.contrib.str-utils2 :only [upper-case]]
         [clojure.contrib.java-utils :only [as-str]]))
 
-(declare rand-str
-         base-string
-         sign
-         url-encode
-         oauth-params
-         success-content)
+(declare success-content)
 
 (defstruct #^{:doc "OAuth consumer"} consumer
   :key
@@ -46,9 +41,9 @@
 (defn request-token
   "Fetch request token for the consumer."
   [consumer]
-  (let [unsigned-params (oauth-params consumer)
-        params (assoc unsigned-params :oauth_signature (sign consumer 
-                                                             (base-string "POST" 
+  (let [unsigned-params (sig/oauth-params consumer)
+        params (assoc unsigned-params :oauth_signature (sig/sign consumer 
+                                                             (sig/base-string "POST" 
                                                                           (:request-uri consumer)
                                                                           unsigned-params)))]
     (success-content
@@ -81,10 +76,10 @@ to approve the Consumer's access to their account."
   ([consumer request-token]
      (access-token consumer request-token nil))
   ([consumer request-token verifier]
-     (let [unsigned-params (oauth-params consumer request-token verifier)
+     (let [unsigned-params (sig/oauth-params consumer request-token verifier)
            params (assoc unsigned-params
-                    :oauth_signature (sign consumer
-                                           (base-string "POST"
+                    :oauth_signature (sig/sign consumer
+                                           (sig/base-string "POST"
                                                         (:access-uri consumer)
                                                         unsigned-params)))]
        (success-content
@@ -98,11 +93,11 @@ to approve the Consumer's access to their account."
 The key-value pairs returned as a map will need to be added to the 
 Authorization HTTP header or added as query parameters to the request."
   [consumer token token-secret request-method request-uri & [request-params]]
-  (let [unsigned-oauth-params (oauth-params consumer token)
+  (let [unsigned-oauth-params (sig/oauth-params consumer token)
         unsigned-params (merge request-params 
                                unsigned-oauth-params)]
-    (assoc unsigned-oauth-params :oauth_signature (sign consumer
-                                                        (base-string (-> request-method
+    (assoc unsigned-oauth-params :oauth_signature (sig/sign consumer
+                                                        (sig/base-string (-> request-method
                                                                          as-str
                                                                          upper-case)
                                                                      request-uri
