@@ -4,9 +4,7 @@
   oauth.client
   (:require [oauth.digest :as digest]
             [com.twinql.clojure.http :as http])
-  (:use [clojure.contrib.str-utils :only [str-join re-split]]
-        [clojure.contrib.str-utils2 :only [upper-case]]
-        [clojure.contrib.java-utils :only [as-str]]))
+  (:use [clojure.contrib.string :as s :only ()]))
 
 (declare rand-str
          base-string
@@ -38,9 +36,9 @@
 (defmethod http/entity-as :urldecoded [entity as]
   (into {}
         (map (fn [kv]
-               (let [[k v] (re-split #"=" kv)]
+               (let [[k v] (s/split #"=" kv)]
                  [(keyword k) v]))
-             (re-split #"&" (http/entity-as entity :string)))))
+             (s/split #"&" (http/entity-as entity :string)))))
 
 (defn request-token
   "Fetch request token for the consumer."
@@ -102,8 +100,8 @@ Authorization HTTP header or added as query parameters to the request."
                                unsigned-oauth-params)]
     (assoc unsigned-oauth-params :oauth_signature (sign consumer
                                                         (base-string (-> request-method
-                                                                         as-str
-                                                                         upper-case)
+                                                                         s/as-str
+                                                                         s/upper-case)
                                                                      request-uri
                                                                      unsigned-params)
                                                         token-secret))))
@@ -111,8 +109,8 @@ Authorization HTTP header or added as query parameters to the request."
 (defn authorization-header
   "OAuth credentials formatted for the Authorization HTTP header."
   [realm credentials]
-  (str "OAuth " (str-join "," (map (fn [[k v]] 
-                                     (str (as-str k) "=\"" v "\""))
+  (str "OAuth " (s/join "," (map (fn [[k v]] 
+                                     (str (s/as-str k) "=\"" v "\""))
                                    (assoc credentials :realm realm)))))
 
 (defn rand-str
@@ -125,9 +123,9 @@ Authorization HTTP header or added as query parameters to the request."
 
 (defn base-string
   [method base-url params]
-  (str-join "&" [method
+  (s/join "&" [method
                  (url-encode base-url) 
-                 (url-encode (str-join "&" (map (fn [[k v]]
+                 (url-encode (s/join "&" (map (fn [[k v]]
                                                   (str (name k) "=" v))
                                                 (sort params))))]))
 
