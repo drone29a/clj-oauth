@@ -3,9 +3,7 @@
        :doc "OAuth client library for Clojure."} 
   oauth.signature
   (:require [oauth.digest :as digest])
-  (:use [clojure.contrib.str-utils :only [str-join re-split]]
-        [clojure.contrib.str-utils2 :only [upper-case]]
-        [clojure.contrib.java-utils :only [as-str]]))
+  (:use [clojure.contrib.string :as s :only [join]]))
 
 (declare rand-str
          base-string
@@ -31,11 +29,11 @@
                                               ))
   )
   ([method base-url params]
-  (str-join "&" [method
+  (s/join "&" [method
                  (url-encode base-url) 
-                 (url-encode (str-join "&" (map (fn [[k v]]
-                                                  (str (name k) "=" v))
-                                                (sort params))))])))
+                 (url-encode (s/join "&" (map (fn [[k v]]
+                                                (str (name k) "=" v))
+                                              (sort params))))])))
 
 (defmulti sign 
   "Sign a base string for authentication."
