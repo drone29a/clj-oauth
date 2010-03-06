@@ -104,3 +104,14 @@
       :params {:file "vacation.jpg" :size "original"}
       :headers { :authorize "OAuth realm=\"http://sp.example.com/\", oauth_consumer_key=\"dpf43f3p2l4k3l03\", oauth_token=\"nnch734d00sl2jdk\", oauth_signature_method=\"HMAC-SHA1\", oauth_signature=\"tR3%2BTy81lMeYAr%2FFid0kMTYa%2FWM%3D\", oauth_timestamp=\"1191242096\", oauth_nonce=\"kllo9940pd9333jh\",oauth_version=\"1.0\""}}) :status)))
   ))
+  
+(deftest
+  #^{:doc "token request"}
+  request-token
+  (is (= 401 ((os/request-token {} ) :status)))
+  (is (= 401 ((os/request-token {:oauth-consumer "consumer" }) :status)))
+  (is (= 200 ((os/request-token {:oauth-consumer "consumer" :oauth-params {:oauth_callback "http://blabla.inv/callback"}}) :status)))
+  (is (= 200 ((os/request-token {:oauth-consumer "consumer" :oauth-params {:oauth_callback "oob"}}) :status)))
+  (is (= "oauth_token=token&oauth_secret=secret&oauth_callback_confirmed=true" ((os/request-token {:oauth-consumer "consumer" :oauth-params {:oauth_callback "http://blabla.inv/callback"}}) :body)))
+  )
+  

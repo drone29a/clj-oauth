@@ -22,6 +22,10 @@
 
 (def signature-methods {:hmac-sha1 "HMAC-SHA1"})
 
+(defn url-form-encode [params]
+  (str-join "&" (map (fn [[k v]]
+                      (str (url-encode (as-str k)) "=" (url-encode (as-str v)))) params ))
+  )
 (defn base-string
   ([method base-url c t params]
     (base-string method base-url (assoc params :oauth_consumer_key (:key c)
@@ -33,9 +37,7 @@
   ([method base-url params]
   (str-join "&" [method
                  (url-encode base-url) 
-                 (url-encode (str-join "&" (map (fn [[k v]]
-                                                  (str (name k) "=" v))
-                                                (sort params))))])))
+                 (url-encode (url-form-encode (sort params)))])))
 
 (defmulti sign 
   "Sign a base string for authentication."

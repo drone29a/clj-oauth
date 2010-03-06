@@ -61,10 +61,53 @@
                 {:secret (first secrets) :signature-method :hmac-sha1}
                 (request-base-string request)
                 (last secrets)))
-                (handler (assoc request :oauth-consumer oauth-consumer :oauth-token oauth-token)) 
+                (handler (assoc request :oauth-consumer oauth-consumer :oauth-token oauth-token :oauth-params op)) 
                 (handler request)
               )
          )
         (handler request)
        ))
       ))
+
+(defn- token-response [token]
+  { :status 200
+    :header {}
+    :body (sig/url-form-encode token)}
+  )
+
+(defn not-allowed []
+  { :status 401
+    :header {}
+    :body nil})
+    
+(defn request-token
+  [request]
+  (if (and 
+        (= (request :oauth-consumer) "consumer")
+        (not (nil? (request :oauth-params)))
+        (not (nil? ((request :oauth-params) :oauth_callback))))
+    (token-response {:oauth_token "token" :oauth_secret "secret" :oauth_callback_confirmed "true"})
+    (not-allowed)
+  ))
+  
+(defn access-token
+  [request]
+  (token-response {:oauth_token "token" :oauth_secret "secret"})
+  )      
+  
+(defn oauth-token-manager
+  "App to manage OAuth token requests. Expects wrap-oauth to be applied already. 
+  Generates the following routes:
+    /oauth/request_token
+    /oauth/access_token
+    /oauth/authorize
+  "
+  [handler]
+  (fn [request]
+    (condp = (:uri request)
+        "/oauth/request_token"
+          (request-token request)
+        "/oauth/access_token"
+          (access-token request)
+        (handler request)))
+  )
