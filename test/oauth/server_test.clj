@@ -114,4 +114,14 @@
   (is (= 200 ((os/request-token {:oauth-consumer "consumer" :oauth-params {:oauth_callback "oob"}}) :status)))
   (is (= "oauth_token=token&oauth_secret=secret&oauth_callback_confirmed=true" ((os/request-token {:oauth-consumer "consumer" :oauth-params {:oauth_callback "http://blabla.inv/callback"}}) :body)))
   )
+
+(deftest
+  #^{:doc "access token request"}
+  access-token
+  (is (= 401 ((os/access-token {} ) :status)))
+  (is (= 401 ((os/access-token {:oauth-consumer "consumer" }) :status)))
+  (is (= 401 ((os/access-token {:oauth-consumer "consumer" :oauth-token "token" }) :status)))
+  (is (= 200 ((os/access-token {:oauth-consumer "consumer" :oauth-token "token" :oauth-params {:oauth_verifier "verifier"}}) :status)))
+  (is (= "oauth_token=token&oauth_secret=secret" ((os/access-token {:oauth-consumer "consumer"  :oauth-token "token" :oauth-params {:oauth_verifier "verifier"}}) :body)))
+  )
   

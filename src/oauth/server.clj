@@ -92,8 +92,14 @@
   
 (defn access-token
   [request]
-  (token-response {:oauth_token "token" :oauth_secret "secret"})
-  )      
+  (if (and 
+        (= (request :oauth-consumer) "consumer")
+        (= (request :oauth-token) "token")
+        (not (nil? (request :oauth-params)))
+        (not (nil? ((request :oauth-params) :oauth_verifier))))
+    (token-response {:oauth_token "token" :oauth_secret "secret"})
+    (not-allowed)
+  ))
   
 (defn oauth-token-manager
   "App to manage OAuth token requests. Expects wrap-oauth to be applied already. 
