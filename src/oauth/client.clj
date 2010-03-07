@@ -45,7 +45,7 @@
                                                                           (:request-uri consumer)
                                                                           unsigned-params)))]
     (success-content
-      (http/post (:request-uri consumer)
+     (http/post (:request-uri consumer)
                  :query params
                  :parameters (http/map->params {:use-expect-continue false})
                  :as :urldecoded))))
@@ -110,12 +110,12 @@ Authorization HTTP header or added as query parameters to the request."
                                    (assoc credentials :realm realm)))))
 
 (defn check-success-response [m]
-  (let [code (:code m)]
+  (let [code (:code m)
+        reason (:reason m)]
     (if (or (< code 200)
             (>= code 300))
-      (throw (new Exception (str "Got non-success response " code ".")))
+      (throw (new Exception (str "Got non-success code: " code ". Reason: " reason)))
       m)))
 
 (defn success-content [m]
-  (:content
-    (check-success-response m)))
+  (:content (check-success-response m)))
