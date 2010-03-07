@@ -67,20 +67,37 @@
   (deftest
     #^{:doc "Create but don't store a request token"}
     new-request-token
-    (let [token (store/new-request-token)]
+    (let [token (store/new-request-token "http://test.com/callback")]
       (is (not (nil? (token :token))))
       (is (not (nil? (token :secret))))
       (is (not (nil? (token :verifier))))
+      (is (= (token :callback_url "http://test.com/callback")))
+      )
+    (let [token (store/new-request-token "http://test.com/callback" {:scope "http://test.com/calendar"})]
+      (is (not (nil? (token :token))))
+      (is (not (nil? (token :secret))))
+      (is (not (nil? (token :verifier))))
+      (is (= (token :callback_url "http://test.com/callback")))
+      (is (= (token :scope "http://test.com/calendar")))
       )
     )
 
   (deftest
     #^{:doc "Create and store a request token"}
     create-request-token
-    (let [token (store/create-request-token :memory)]
+    (let [token (store/create-request-token :memory "http://test.com/callback")]
       (is (not (nil? (token :token))))
       (is (not (nil? (token :secret))))
       (is (not (nil? (token :verifier))))
+      (is (= (token :callback_url "http://test.com/callback")))
+      (is (= (store/get-request-token :memory (token :token)) token))
+      )
+    (let [token (store/create-request-token :memory "http://test.com/callback" {:scope "http://test.com/calendar"})]
+      (is (not (nil? (token :token))))
+      (is (not (nil? (token :secret))))
+      (is (not (nil? (token :verifier))))
+      (is (= (token :callback_url "http://test.com/callback")))
+      (is (= (token :scope "http://test.com/calendar")))
       (is (= (store/get-request-token :memory (token :token)) token))
       )
     )

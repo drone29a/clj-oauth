@@ -64,14 +64,14 @@
 
 (defn new-request-token
   "Creates but doesn't store a request token"
-  ([] (new-request-token {}))
-  ([params] (assoc params :token (rand-str 20) :secret (rand-str 40) :verifier (rand-str 20)))
+  ([callback_url] (new-request-token callback_url {}))
+  ([callback_url params] (assoc params :token (rand-str 20) :secret (rand-str 40) :verifier (rand-str 20) :callback_url callback_url))
   )
 
 (defn create-request-token 
   "Creates and stores a request token"
-  ([store] (create-request-token store {}))
-  ([store params] (store-request-token store (new-request-token params)))  
+  ([store callback_url] (create-request-token store callback_url {}))
+  ([store callback_url params] (store-request-token store (new-request-token callback_url params)))  
   )
 
 (defn new-access-token
