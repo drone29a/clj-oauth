@@ -4,9 +4,7 @@
   oauth.server
   (:require [oauth.digest :as digest]
             [oauth.signature :as sig])
-  (:use [clojure.contrib.str-utils :only [str-join re-split]]
-        [clojure.contrib.str-utils2 :only [upper-case]]
-        [clojure.contrib.java-utils :only [as-str]])
+  (:use [clojure.contrib.string :as s :only [upper-case as-str]])
 )
 
 
