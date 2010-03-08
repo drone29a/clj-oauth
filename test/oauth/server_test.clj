@@ -1,6 +1,7 @@
 (ns oauth.server-test
   (:require [oauth.server :as os]
-            [oauth.signature :as sig] :reload-all)
+            [oauth.signature :as sig]
+            [oauth.token-store :as store] :reload-all)
   (:use clojure.test))
 
 (deftest
@@ -19,6 +20,16 @@
   (is (= (os/parse-oauth-header "Basic realm=\"Secure Area\"") nil))
   (is (= (os/parse-oauth-header "") nil))
   (is (= (os/parse-oauth-header nil) nil))
+)
+
+(deftest
+  #^{:doc "Test parsing of form encoded string."} 
+  parse-form-encoded
+  (is (= (os/parse-form-encoded "hello=this") { :hello "this"}))
+  (is (= (os/parse-form-encoded "hello=") { :hello nil}))
+  (is (= (os/parse-form-encoded "hello=this&fun=stuff") { :hello "this" :fun "stuff"}))
+  (is (= (os/parse-form-encoded "") {}))
+  (is (= (os/parse-form-encoded nil) {}))
 )
 
 (deftest
@@ -108,11 +119,28 @@
 (deftest
   #^{:doc "token request"}
   request-token
-  (is (= 401 ((os/request-token {} ) :status)))
-  (is (= 401 ((os/request-token {:oauth-consumer "consumer" }) :status)))
-  (is (= 200 ((os/request-token {:oauth-consumer "consumer" :oauth-params {:oauth_callback "http://blabla.inv/callback"}}) :status)))
-  (is (= 200 ((os/request-token {:oauth-consumer "consumer" :oauth-params {:oauth_callback "oob"}}) :status)))
-  (is (= "oauth_token=token&oauth_secret=secret&oauth_callback_confirmed=true" ((os/request-token {:oauth-consumer "consumer" :oauth-params {:oauth_callback "http://blabla.inv/callback"}}) :body)))
+  (let [consumer (store/create-consumer :memory)]
+    (is (= 401 ((os/request-token :memory {} ) :status)))
+    (is (= 401 ((os/request-token :memory {:oauth-consumer (consumer :key) }) :status)))
+    (is (= 200 ((os/request-token :memory {:oauth-consumer (consumer :key) :oauth-params {:oauth_callback "http://blabla.inv/callback"}}) :status)))
+    (is (= 200 ((os/request-token :memory {:oauth-consumer (consumer :key) :oauth-params {:oauth_callback "oob"}}) :status)))
+    (let [token-body ((os/request-token :memory 
+                      {:oauth-consumer (consumer :key) :oauth-params {:oauth_callback "http://blabla.inv/callback"}}) :body )
+          token-params (os/parse-form-encoded token-body)]
+      (is (not (nil? token-body)))
+      (is (not (nil? token-params)))
+      (is (not (nil? (token-params :oauth_token))))
+      (is (not (nil? (token-params :oauth_secret))))
+      (is (= (token-params :oauth_callback_confirmed) "true"))
+      (is (nil? (token-params :oauth_verifier)))
+      (let [token (store/get-request-token :memory (token-params :oauth_token))]
+        (is (not (nil? token)))
+        (is (= (token :token) (token-params :oauth_token)))
+        (is (= (token :secret) (token-params :oauth_secret)))
+        (is (= (token :consumer) (consumer :key)))
+        (is (not (nil? (token :verifier))))
+        )
+    ))
   )
 
 (deftest

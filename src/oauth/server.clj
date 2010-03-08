@@ -3,7 +3,8 @@
        :doc "OAuth server library for Clojure."} 
   oauth.server
   (:require [oauth.digest :as digest]
-            [oauth.signature :as sig])
+            [oauth.signature :as sig]
+            [oauth.token-store :as store])
   (:use [clojure.contrib.str-utils :only [str-join re-split]]
         [clojure.contrib.str-utils2 :only [upper-case]]
         [clojure.contrib.java-utils :only [as-str]])
@@ -22,6 +23,16 @@
       )
 )
 
+(defn parse-form-encoded [string]
+  (if (or (nil? string)
+          (= string ""))
+    {}
+   (reduce 
+     (fn [h v] (assoc h (keyword (first v)) (second v))) 
+     {} 
+     (vec (map #(re-split #"=" %) (re-split #"&" string))))
+  ))
+  
 (defn oauth-params [request]
   (parse-oauth-header ((or (request :headers) {}) :authorize))
 )
@@ -81,12 +92,14 @@
     :body nil})
     
 (defn request-token
-  [request]
+  [store request]
   (if (and 
-        (= (request :oauth-consumer) "consumer")
+        (not (nil? (store/get-consumer store (request :oauth-consumer))))
         (not (nil? (request :oauth-params)))
         (not (nil? ((request :oauth-params) :oauth_callback))))
-    (token-response {:oauth_token "token" :oauth_secret "secret" :oauth_callback_confirmed "true"})
+    (let [token (store/create-request-token store (request :oauth-consumer) ((request :oauth-params) :oauth_callback))]
+      (token-response {:oauth_token (token :token) :oauth_secret (token :secret) :oauth_callback_confirmed "true"})      
+      )
     (not-allowed)
   ))
   

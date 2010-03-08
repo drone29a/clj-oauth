@@ -27,6 +27,11 @@
   "Stores request-token"
   (fn [c _] c))
 
+;; Authorizes a request token. 
+(defmulti authorize-token 
+  "Revokes a request-token"
+  (fn [c _] c))
+
 ;; Revokes a request token. Implementations can chose to simply delete record. 
 ;; However once this is called it should no longer be returned by get-request-token
 (defmulti revoke-request-token 
@@ -64,14 +69,14 @@
 
 (defn new-request-token
   "Creates but doesn't store a request token"
-  ([callback_url] (new-request-token callback_url {}))
-  ([callback_url params] (assoc params :token (rand-str 20) :secret (rand-str 40) :verifier (rand-str 20) :callback_url callback_url))
+  ([consumer callback_url] (new-request-token consumer callback_url {}))
+  ([consumer callback_url params] (assoc params :token (rand-str 20) :secret (rand-str 40) :verifier (rand-str 20) :callback_url callback_url :consumer consumer))
   )
 
 (defn create-request-token 
   "Creates and stores a request token"
-  ([store callback_url] (create-request-token store callback_url {}))
-  ([store callback_url params] (store-request-token store (new-request-token callback_url params)))  
+  ([store consumer callback_url] (create-request-token store consumer callback_url {}))
+  ([store consumer callback_url params] (store-request-token store (new-request-token consumer callback_url params)))  
   )
 
 (defn new-access-token
@@ -99,7 +104,6 @@
     ((swap! memory-consumers assoc (consumer :key) consumer) (consumer :key))
   )
 
-
 (def memory-request-tokens (atom {}))
 
 (defmethod get-request-token :memory
@@ -112,6 +116,13 @@
     ((swap! memory-request-tokens assoc (token :token) token) (token :token))
   )
 
+(defmethod authorize-token :memory
+  [_ token]
+  (let [rt (@memory-request-tokens token)]
+    (swap! memory-request-tokens assoc token (assoc rt :authorized true))
+    )
+  )
+  
 (defmethod revoke-request-token :memory
   [_ token]
     (swap! memory-request-tokens dissoc token )
