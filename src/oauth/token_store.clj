@@ -81,14 +81,14 @@
 
 (defn new-access-token
   "Creates but doesn't store an access token"
-  ([] (new-access-token {}))
-  ([params] (assoc params :token (rand-str 20) :secret (rand-str 40)))
+  ([consumer ] (new-access-token consumer {}))
+  ([consumer params] (assoc params :token (rand-str 20) :secret (rand-str 40) :consumer consumer ))
   )
 
 (defn create-access-token 
   "Creates and stores an access token"
-  ([store] (create-access-token store {}))
-  ([store params] (store-access-token store (new-access-token params)))  
+  ([store consumer] (create-access-token store consumer {}))
+  ([store consumer params] (store-access-token store (new-access-token consumer params))) 
   )
 
 ;; Local in memory implementation

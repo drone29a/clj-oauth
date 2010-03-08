@@ -146,10 +146,33 @@
 (deftest
   #^{:doc "access token request"}
   access-token
-  (is (= 401 ((os/access-token {} ) :status)))
-  (is (= 401 ((os/access-token {:oauth-consumer "consumer" }) :status)))
-  (is (= 401 ((os/access-token {:oauth-consumer "consumer" :oauth-token "token" }) :status)))
-  (is (= 200 ((os/access-token {:oauth-consumer "consumer" :oauth-token "token" :oauth-params {:oauth_verifier "verifier"}}) :status)))
-  (is (= "oauth_token=token&oauth_secret=secret" ((os/access-token {:oauth-consumer "consumer"  :oauth-token "token" :oauth-params {:oauth_verifier "verifier"}}) :body)))
-  )
+  (let [consumer (store/create-consumer :memory)
+        request-token (store/create-request-token :memory consumer "http://test.com/callback")
+      ]
+    (is (= 401 ((os/access-token :memory {} ) :status)))
+    (is (= 401 ((os/access-token :memory { :oauth-consumer consumer }) :status)))
+    (is (= 401 ((os/access-token :memory { :oauth-consumer consumer :oauth-token request-token :oauth-params {:oauth_verifier (request-token :verifier)}}) :status)))
+    (is (= 401 ((os/access-token :memory { :oauth-consumer consumer :oauth-token request-token :oauth-params {:oauth_verifier (request-token :verifier)}}) :status)))
+    (do
+      (store/authorize-token :memory (request-token :token))
+      (let [request-token (store/get-request-token :memory (request-token :token))]
+        (is (= 401 ((os/access-token :memory { :oauth-consumer consumer :oauth-token request-token :oauth-params {} }) :status)))
+        (is (= 401 ((os/access-token :memory { :oauth-consumer consumer :oauth-token request-token :oauth-params {:oauth_verifier "fake"}}) :status)))
+        (let [ token-response (os/access-token :memory {:oauth-consumer consumer  :oauth-token request-token 
+                                :oauth-params {:oauth_verifier (request-token :verifier)}})
+               token-params (os/parse-form-encoded (token-response :body))]
+          (is (= 200 (token-response :status)))
+          (is (not (nil? token-params)))
+          (is (not (nil? (token-params :oauth_token))))
+          (is (not (nil? (token-params :oauth_secret))))
+          (let [token (store/get-access-token :memory (token-params :oauth_token))]
+            (is (not (nil? token)))
+            (is (= (token :token) (token-params :oauth_token)))
+            (is (= (token :secret) (token-params :oauth_secret)))
+            (is (= (token :consumer) consumer))
+            )    
+        ))
+        
+        )
+  ))
   

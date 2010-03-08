@@ -104,13 +104,19 @@
   ))
   
 (defn access-token
-  [request]
+  [store request]
   (if (and 
-        (= (request :oauth-consumer) "consumer")
-        (= (request :oauth-token) "token")
-        (not (nil? (request :oauth-params)))
-        (not (nil? ((request :oauth-params) :oauth_verifier))))
-    (token-response {:oauth_token "token" :oauth_secret "secret"})
+        (contains? request :oauth-consumer)
+        (contains? request :oauth-token)
+        ((request :oauth-token) :authorized)
+        (= (request :oauth-consumer) ((request :oauth-token) :consumer))
+        (contains? request :oauth-params)
+        (contains? (request :oauth-params) :oauth_verifier)
+        (= ((request :oauth-params) :oauth_verifier) ((request :oauth-token) :verifier))
+        )
+    (let [token (store/create-access-token store (request :oauth-consumer) )]
+      (token-response {:oauth_token (token :token) :oauth_secret (token :secret)})      
+      )
     (not-allowed)
   ))
   

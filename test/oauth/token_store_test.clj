@@ -125,18 +125,20 @@
   (deftest
     #^{:doc "Create but don't store an access token"}
     new-access-token
-    (let [token (store/new-access-token)]
+    (let [token (store/new-access-token "consumer")]
       (is (not (nil? (token :token))))
       (is (not (nil? (token :secret))))
+      (is (= (token :consumer "consumer")))
       )
     )
 
   (deftest
     #^{:doc "Create and store an access token"}
     create-access-token
-    (let [token (store/create-access-token :memory)]
+    (let [token (store/create-access-token :memory "consumer")]
       (is (not (nil? (token :token))))
       (is (not (nil? (token :secret))))
+      (is (= (token :consumer "consumer")))
       (is (= (store/get-access-token :memory (token :token)) token))
       )
     )
