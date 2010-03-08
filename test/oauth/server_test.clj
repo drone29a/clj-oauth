@@ -121,11 +121,11 @@
   request-token
   (let [consumer (store/create-consumer :memory)]
     (is (= 401 ((os/request-token :memory {} ) :status)))
-    (is (= 401 ((os/request-token :memory {:oauth-consumer (consumer :key) }) :status)))
-    (is (= 200 ((os/request-token :memory {:oauth-consumer (consumer :key) :oauth-params {:oauth_callback "http://blabla.inv/callback"}}) :status)))
-    (is (= 200 ((os/request-token :memory {:oauth-consumer (consumer :key) :oauth-params {:oauth_callback "oob"}}) :status)))
+    (is (= 401 ((os/request-token :memory {:oauth-consumer consumer }) :status)))
+    (is (= 200 ((os/request-token :memory {:oauth-consumer consumer :oauth-params {:oauth_callback "http://blabla.inv/callback"}}) :status)))
+    (is (= 200 ((os/request-token :memory {:oauth-consumer consumer :oauth-params {:oauth_callback "oob"}}) :status)))
     (let [token-body ((os/request-token :memory 
-                      {:oauth-consumer (consumer :key) :oauth-params {:oauth_callback "http://blabla.inv/callback"}}) :body )
+                      {:oauth-consumer consumer :oauth-params {:oauth_callback "http://blabla.inv/callback"}}) :body )
           token-params (os/parse-form-encoded token-body)]
       (is (not (nil? token-body)))
       (is (not (nil? token-params)))
@@ -137,7 +137,7 @@
         (is (not (nil? token)))
         (is (= (token :token) (token-params :oauth_token)))
         (is (= (token :secret) (token-params :oauth_secret)))
-        (is (= (token :consumer) (consumer :key)))
+        (is (= (token :consumer) consumer))
         (is (not (nil? (token :verifier))))
         )
     ))

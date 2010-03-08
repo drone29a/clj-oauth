@@ -94,8 +94,9 @@
 (defn request-token
   [store request]
   (if (and 
-        (not (nil? (store/get-consumer store (request :oauth-consumer))))
-        (not (nil? (request :oauth-params)))
+        (contains? request :oauth-consumer)
+        (not (contains? request :oauth-token))
+        (contains? request :oauth-params)
         (not (nil? ((request :oauth-params) :oauth_callback))))
     (let [token (store/create-request-token store (request :oauth-consumer) ((request :oauth-params) :oauth_callback))]
       (token-response {:oauth_token (token :token) :oauth_secret (token :secret) :oauth_callback_confirmed "true"})      
