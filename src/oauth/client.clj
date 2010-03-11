@@ -5,17 +5,17 @@
   (:require [oauth.digest :as digest]
             [oauth.signature :as sig]
             [com.twinql.clojure.http :as http])
-  (:use [clojure.contrib.string :as s :only ()]))
+  (:use [clojure.contrib.string :only (as-str join split upper-case)]))
 
 (declare success-content)
 
 (defstruct #^{:doc "OAuth consumer"} consumer
-  :key
-  :secret
-  :request-uri
-  :access-uri
-  :authorize-uri
-  :signature-method)
+           :key
+           :secret
+           :request-uri
+           :access-uri
+           :authorize-uri
+           :signature-method)
 
 (defn make-consumer
   "Make a consumer struct map."
@@ -32,23 +32,23 @@
 (defmethod http/entity-as :urldecoded [entity as]
   (into {}
         (map (fn [kv]
-               (let [[k v] (s/split #"=" kv)]
+               (let [[k v] (split #"=" kv)]
                  [(keyword k) v]))
-             (s/split #"&" (http/entity-as entity :string)))))
+             (split #"&" (http/entity-as entity :string)))))
 
 (defn request-token
   "Fetch request token for the consumer."
   [consumer]
   (let [unsigned-params (sig/oauth-params consumer)
         params (assoc unsigned-params :oauth_signature (sig/sign consumer 
-                                                             (sig/base-string "POST" 
-                                                                          (:request-uri consumer)
-                                                                          unsigned-params)))]
+                                                                 (sig/base-string "POST" 
+                                                                                  (:request-uri consumer)
+                                                                                  unsigned-params)))]
     (success-content
      (http/post (:request-uri consumer)
-                 :query params
-                 :parameters (http/map->params {:use-expect-continue false})
-                 :as :urldecoded))))
+                :query params
+                :parameters (http/map->params {:use-expect-continue false})
+                :as :urldecoded))))
 
 (defn user-approval-uri
   "Builds the URI to the Service Provider where the User will be prompted
@@ -77,9 +77,9 @@ to approve the Consumer's access to their account."
      (let [unsigned-params (sig/oauth-params consumer request-token verifier)
            params (assoc unsigned-params
                     :oauth_signature (sig/sign consumer
-                                           (sig/base-string "POST"
-                                                        (:access-uri consumer)
-                                                        unsigned-params)))]
+                                               (sig/base-string "POST"
+                                                                (:access-uri consumer)
+                                                                unsigned-params)))]
        (success-content
         (http/post (:access-uri consumer)
                    :query params
@@ -96,8 +96,8 @@ Authorization HTTP header or added as query parameters to the request."
                                unsigned-oauth-params)]
     (assoc unsigned-oauth-params :oauth_signature (sig/sign consumer
                                                             (sig/base-string (-> request-method
-                                                                                 s/as-str
-                                                                                 s/upper-case)
+                                                                                 as-str
+                                                                                 upper-case)
                                                                              request-uri
                                                                              unsigned-params)
                                                             token-secret))))
@@ -105,9 +105,9 @@ Authorization HTTP header or added as query parameters to the request."
 (defn authorization-header
   "OAuth credentials formatted for the Authorization HTTP header."
   [realm credentials]
-  (str "OAuth " (s/join "," (map (fn [[k v]] 
-                                     (str (s/as-str k) "=\"" v "\""))
-                                   (assoc credentials :realm realm)))))
+  (str "OAuth " (join "," (map (fn [[k v]] 
+                                 (str (as-str k) "=\"" v "\""))
+                               (assoc credentials :realm realm)))))
 
 (defn check-success-response [m]
   (let [code (:code m)
