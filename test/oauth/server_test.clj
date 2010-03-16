@@ -98,11 +98,16 @@
 ;;   (if (and (= consumer "0685bd9184jfhq22") (= token "ad180jjd733klru7")) 
 ;;     ["kd94hf93k423kf44" "pfkkdhi9sl3r4s00"] nil
 ;;     ))
-
+(defn store-token-finder [store]
+  (fn [consumer token]
+    )
+  )
 (deftest
   #^{:doc "wrap oauth"}
   wrap-oauth
-  (let [oauth-app (os/wrap-oauth app token-finder) ]
+  (let [oauth-app (os/wrap-oauth app :memory) 
+        _  (store/store-consumer :memory {:key "dpf43f3p2l4k3l03" :secret "kd94hf93k423kf44"})
+        _  (store/store-access-token :memory {:token "nnch734d00sl2jdk" :secret "pfkkdhi9sl3r4s00"})]
     (is (= 401 ((oauth-app {}) :status)))
     (is (= 401 ((oauth-app {:headers { :authorize "Basic realm=\"Secure Area\""}}) :status)))
     (is (= 401 ((oauth-app {:headers { :authorize "OAuth realm=\"http://sp.example.com/\", oauth_consumer_key=\"0685bd9184jfhq22\", oauth_token=\"ad180jjd733klru7\", oauth_signature_method=\"HMAC-SHA1\", oauth_signature=\"fake\", oauth_timestamp=\"137131200\", oauth_nonce=\"4572616e48616d6d65724c61686176\",oauth_version=\"1.0\""}}) :status)))

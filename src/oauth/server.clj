@@ -58,20 +58,19 @@
     :oauth-consumer - The consumer key used
   Takes a function which will be used to find a token. This accepts the consumer and token parameters
   and should return the responding consumer secret and token secret."
-  [handler token-finder]
+  [handler store]
   (fn [request]
     (let 
        [op (oauth-params request)]
        (if (not (empty? op))
          (let 
-           [oauth-consumer (op :oauth_consumer_key)
-            oauth-token (op :oauth_token)
-            secrets (token-finder oauth-consumer oauth-token)]
-            (if (and (not (empty? secrets)) (sig/verify 
+           [oauth-consumer (store/get-consumer store (op :oauth_consumer_key))
+            oauth-token (store/get-access-token store (op :oauth_token))]
+            (if (sig/verify 
                 (op :oauth_signature)
-                {:secret (first secrets) :signature-method :hmac-sha1}
+                {:secret (and oauth-consumer (oauth-consumer :secret)) :signature-method :hmac-sha1}
                 (request-base-string request)
-                (last secrets)))
+                (and oauth-token (oauth-token :secret)))
                 (handler (assoc request :oauth-consumer oauth-consumer :oauth-token oauth-token :oauth-params op)) 
                 (handler request)
               )
