@@ -2,3 +2,5 @@
 .*.sw*
 lib
 classes
+*.jar
+pom.xml

@@ -55,7 +55,8 @@
 
 (defn verify [sig digest-method c base-string & [token-secret]]
   (do
-    (println sig (sign digest-method c base-string token-secret))
+    ;; TODO remove this before actualy release
+    (println sig (sign digest-method c base-string token-secret))  ; print out signature for debugging purposes
     (= sig (sign digest-method c base-string token-secret)))
 )
 
