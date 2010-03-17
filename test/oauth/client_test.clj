@@ -12,7 +12,7 @@
                             nil
                             nil
                             :hmac-sha1)]
-    (is (= (sig/sign c (sig/base-string "GET"
+    (is (= (sig/sign :hmac-sha1 c (sig/base-string "GET"
                                       "http://photos.example.net/photos"
                                       {:oauth_consumer_key "dpf43f3p2l4k3l03"
                                        :oauth_token "nnch734d00sl2jdk"

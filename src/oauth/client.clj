@@ -42,7 +42,7 @@
   "Fetch request token for the consumer."
   [consumer]
   (let [unsigned-params (sig/oauth-params consumer)
-        params (assoc unsigned-params :oauth_signature (sig/sign consumer 
+        params (assoc unsigned-params :oauth_signature (sig/sign (consumer :digest-method) consumer 
                                                              (sig/base-string "POST" 
                                                                           (:request-uri consumer)
                                                                           unsigned-params)))]
@@ -78,7 +78,7 @@ to approve the Consumer's access to their account."
   ([consumer request-token verifier]
      (let [unsigned-params (sig/oauth-params consumer request-token verifier)
            params (assoc unsigned-params
-                    :oauth_signature (sig/sign consumer
+                    :oauth_signature (sig/sign (consumer :digest-method) consumer
                                            (sig/base-string "POST"
                                                         (:access-uri consumer)
                                                         unsigned-params)))]
@@ -96,7 +96,7 @@ Authorization HTTP header or added as query parameters to the request."
   (let [unsigned-oauth-params (sig/oauth-params consumer token)
         unsigned-params (merge request-params 
                                unsigned-oauth-params)]
-    (assoc unsigned-oauth-params :oauth_signature (sig/sign consumer
+    (assoc unsigned-oauth-params :oauth_signature (sig/sign (consumer :digest-method) consumer
                                                         (sig/base-string (-> request-method
                                                                          as-str
                                                                          upper-case)

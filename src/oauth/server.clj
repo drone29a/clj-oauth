@@ -61,17 +61,23 @@
   [handler store]
   (fn [request]
     (let 
-       [op (oauth-params request)]
+       [op (oauth-params request)
+       ;; _ (println op)
+       ]
        (if (not (empty? op))
          (let 
            [oauth-consumer (store/get-consumer store (op :oauth_consumer_key))
             oauth-token (store/get-access-token store (op :oauth_token))]
             (if (sig/verify 
-                (op :oauth_signature)
-                {:secret (and oauth-consumer (oauth-consumer :secret)) :signature-method :hmac-sha1}
+                (sig/url-decode (op :oauth_signature))
+                (keyword (.toLowerCase (op :oauth_signature_method)))
+                oauth-consumer
                 (request-base-string request)
                 (and oauth-token (oauth-token :secret)))
-                (handler (assoc request :oauth-consumer oauth-consumer :oauth-token oauth-token :oauth-params op)) 
+                (if (nil? oauth-token)
+                  (handler (assoc request :oauth-consumer oauth-consumer :oauth-params op)) 
+                  (handler (assoc request :oauth-consumer oauth-consumer :oauth-token oauth-token :oauth-params op)) 
+                )
                 (handler request)
               )
          )
@@ -127,12 +133,12 @@
     /oauth/access_token
     /oauth/authorize
   "
-  [handler]
+  [handler store]
   (fn [request]
     (condp = (:uri request)
         "/oauth/request_token"
-          (request-token request)
+          (request-token store request)
         "/oauth/access_token"
-          (access-token request)
+          (access-token store request)
         (handler request)))
   )

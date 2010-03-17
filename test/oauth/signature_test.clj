@@ -43,13 +43,13 @@
     ))
            
 (deftest 
-    #^{:doc "Test signing of a request."} 
-  signature
+    #^{:doc "Test hmac-sha1 signing of a request."} 
+  hmac-sha1-signature
   (let [c { :key "dpf43f3p2l4k3l03"
             :secret "kd94hf93k423kf44"
             :signature-method :hmac-sha1}]
             
-    (is (= (sig/sign c (sig/base-string "GET"
+    (is (= (sig/sign :hmac-sha1 c (sig/base-string "GET"
                                       "http://photos.example.net/photos"
                                       {:oauth_consumer_key "dpf43f3p2l4k3l03"
                                        :oauth_token "nnch734d00sl2jdk"
@@ -62,6 +62,34 @@
                     "pfkkdhi9sl3r4s00")
            "tR3+Ty81lMeYAr/Fid0kMTYa/WM="))))
 
+(deftest
+  #^{:doc "test plaintext signatures"}
+  plaintext-signature
+  (let [c { :key "dpf43f3p2l4k3l03"
+             :secret "kd94hf93k423kf44"
+             :signature-method :hmac-sha1}]  ; I'm intentionally testing with this as sha1
+             
+    (is (= "kd94hf93k423kf44&" (sig/sign :plaintext c (sig/base-string "POST"
+                                      "https://photos.example.net/request_token"
+                                      {:oauth_consumer_key "dpf43f3p2l4k3l03"
+                                       :oauth_signature_method "PLAINTEXT"
+                                       :oauth_timestamp "1191242090"
+                                       :oauth_nonce "hsu94j3884jdopsl"
+                                       :oauth_version "1.0"}))
+                    ))
+    (is (= "kd94hf93k423kf44&hdhd0244k9j7ao03" (sig/sign :plaintext c (sig/base-string "POST"
+                                      "https://photos.example.net/access_token"
+                                      {:oauth_consumer_key "dpf43f3p2l4k3l03"
+                                       :oauth_signature_method "PLAINTEXT"
+                                       :oauth_timestamp "1191242090"
+                                       :oauth_token "hh5s93j4hdidpola"
+                                       :oauth_nonce "hsu94j3884jdopsl"
+                                       :oauth_verifier "hfdp7dh39dks9884"
+                                       :oauth_version "1.0"})
+                                       "hdhd0244k9j7ao03")
+                    ))
+    
+    ))
 (deftest 
    #^{:doc "Test verification of signed request."} 
  verify
@@ -69,7 +97,7 @@
            :secret "kd94hf93k423kf44"
            :signature-method :hmac-sha1}]
 
-   (is (sig/verify "tR3+Ty81lMeYAr/Fid0kMTYa/WM=" c (sig/base-string "GET"
+   (is (sig/verify "tR3+Ty81lMeYAr/Fid0kMTYa/WM=" :hmac-sha1 c (sig/base-string "GET"
                                      "http://photos.example.net/photos"
                                      {:oauth_consumer_key "dpf43f3p2l4k3l03"
                                       :oauth_token "nnch734d00sl2jdk"
@@ -80,6 +108,14 @@
                                       :file "vacation.jpg"
                                       :size "original"})
                                       "pfkkdhi9sl3r4s00")
+                   )
+   (is (sig/verify "kd94hf93k423kf44&" :plaintext c (sig/base-string "POST"
+                                     "https://photos.example.net/request_token"
+                                     {:oauth_consumer_key "dpf43f3p2l4k3l03"
+                                      :oauth_signature_method "PLAINTEXT"
+                                      :oauth_timestamp "1191242090"
+                                      :oauth_nonce "hsu94j3884jdopsl"
+                                      :oauth_version "1.0"}))
                    )
           ))
            
