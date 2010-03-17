@@ -18,32 +18,41 @@
   [length]
   (. (new BigInteger (* 5 length) secure-random) toString 32))
 
-(def signature-methods {:hmac-sha1 "HMAC-SHA1"})
 
+(def signature-methods {:hmac-sha1 "HMAC-SHA1"
+                        :plaintext "PLAINTEXT"})
+
+(defn url-form-encode [params]
+  (str-join "&" (map (fn [[k v]]
+                      (str (url-encode (as-str k)) "=" (url-encode (as-str v)))) params )))
 (defn base-string
   ([method base-url c t params]
-     (base-string method base-url (assoc params :oauth_consumer_key (:key c)
-                                         :oauth_token (:token t)
-                                         :oauth_signature_method (signature-methods (:signature-method c))
-                                         :oauth_version "1.0")))
+    (base-string method base-url (assoc params :oauth_consumer_key (:key c)
+                                                :oauth_token (:token t)
+                                                :oauth_signature_method (or (params :oauth_signature_method) 
+                                                                            (signature-methods (:signature-method c)))
+                                                :oauth_version "1.0")))
   ([method base-url params]
-     (s/join "&" [method
-                  (url-encode base-url) 
-                  (url-encode (s/join "&" (map (fn [[k v]]
-                                                 (str (name k) "=" v))
-                                               (sort params))))])))
+  (str-join "&" [method
+                 (url-encode base-url) 
+                 (url-encode (url-form-encode (sort params)))])))
 
 (defmulti sign 
   "Sign a base string for authentication."
+  {:arglists '([consumer base-string & [token-secret]])}
   (fn [c & r] (:signature-method c)))
 
 (defmethod sign :hmac-sha1
   [c base-string & [token-secret]]
-  (let [key (str (:secret c) "&" (or token-secret ""))]
+  (let [key (str (url-encode (:secret c)) "&" (url-encode (or token-secret "")))]
     (digest/hmac key base-string)))
 
-(defn verify [sig c base-string & [token-secret]]
-  (= sig (sign c base-string token-secret)))
+(defmethod sign :plaintext
+  [c base-string & [token-secret]]
+  (str (url-encode (c :secret)) "&" (url-encode token-secret)))
+
+(defn verify [sig digest-method c base-string & [token-secret]]
+  (= sig (sign digest-method c base-string token-secret)))
 
 (defn url-encode
   "The java.net.URLEncoder class encodes for application/x-www-form-urlencoded, but OAuth

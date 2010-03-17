@@ -6,7 +6,6 @@
             [oauth.signature :as sig])
   (:use [clojure.contrib.string :as s :only [upper-case as-str]]))
 
-
 (defn parse-oauth-header 
   "Parses the oauth http header"
   [auth]
