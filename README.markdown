@@ -73,7 +73,7 @@ The server support makes it simple to add oauth support to any [ring](http://git
                         (:oauth_token_secret access-token-response)
                         (twitter/update-status "using clj-oauth with clojure-twitter"))
 
-# Server support #
+# Server Support #
 
 The server support is implemented as ring middleware. It depends on params middleware already having been run upstream.
 
