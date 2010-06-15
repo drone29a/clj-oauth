@@ -5,7 +5,7 @@
 The client part of the library depends on Richard Newman's [clj-apache-http](http://github.com/rnewman/clj-apache-http) which includes Apache's
 HTTP components.
 
-The server support makes it simple to add oauth support to any [ring](http://github.com/mmcgrana/ring) based web applications such as Compojure.
+The server support makes it simple to add OAuth support to any [Ring](http://github.com/mmcgrana/ring) based web applications such as Compojure.
 
 # Building #
 
@@ -75,7 +75,7 @@ The server support makes it simple to add oauth support to any [ring](http://git
 
 # Server Support #
 
-The server support is implemented as ring middleware. It depends on params middleware already having been run upstream.
+The server support is implemented as Ring middleware. It depends on params middleware already having been run upstream.
 
 # Authors #
 
