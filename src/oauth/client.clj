@@ -5,7 +5,7 @@
   (:require [oauth.digest :as digest]
             [oauth.signature :as sig]
             [com.twinql.clojure.http :as http])
-  (:use [clojure.contrib.string :only (as-str join split upper-case)]))
+  (:use [clojure.contrib.string :only [as-str join split upper-case]]))
 
 (declare success-content)
 

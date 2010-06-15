@@ -3,7 +3,7 @@
        :doc "OAuth client library for Clojure."} 
   oauth.signature
   (:require [oauth.digest :as digest])
-  (:use [clojure.contrib.string :as s :only [join]]))
+  (:use [clojure.contrib.string :only [join as-str]]))
 
 (declare rand-str
          base-string
@@ -16,14 +16,14 @@
 (defn rand-str 
   "Random string for OAuth requests."
   [length]
-  (. (new BigInteger (* 5 length) secure-random) toString 32))
+  (. (new BigInteger (int (* 5 length)) ^java.util.Random secure-random) toString 32))
 
 
 (def signature-methods {:hmac-sha1 "HMAC-SHA1"
                         :plaintext "PLAINTEXT"})
 
 (defn url-form-encode [params]
-  (str-join "&" (map (fn [[k v]]
+  (join "&" (map (fn [[k v]]
                       (str (url-encode (as-str k)) "=" (url-encode (as-str v)))) params )))
 (defn base-string
   ([method base-url c t params]
@@ -33,7 +33,7 @@
                                                                             (signature-methods (:signature-method c)))
                                                 :oauth_version "1.0")))
   ([method base-url params]
-  (str-join "&" [method
+  (join "&" [method
                  (url-encode base-url) 
                  (url-encode (url-form-encode (sort params)))])))
 

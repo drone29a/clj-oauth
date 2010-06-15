@@ -4,7 +4,7 @@
 
 (defn hmac 
   "Calculate HMAC signature for given data."
-  [key data]
+  [^String key ^String data]
   (let [hmac-sha1 "HmacSHA1"
         signing-key (SecretKeySpec. (.getBytes key) hmac-sha1)
         mac (doto (Mac/getInstance hmac-sha1) (.init signing-key))]

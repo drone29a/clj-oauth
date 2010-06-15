@@ -4,7 +4,7 @@
   oauth.server
   (:require [oauth.digest :as digest]
             [oauth.signature :as sig])
-  (:use [clojure.contrib.string :as s :only [upper-case as-str]]))
+  (:use [clojure.contrib.string :only [upper-case as-str]]))
 
 (defn parse-oauth-header 
   "Parses the oauth http header"
