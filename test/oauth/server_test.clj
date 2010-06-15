@@ -1,5 +1,6 @@
 (ns oauth.server-test
   (:require [oauth.server :as os]
+            [oauth.client :as oc]
             [oauth.signature :as sig]
             [oauth.token-store :as store] :reload-all)
   (:use clojure.test))
@@ -124,11 +125,11 @@
   #^{:doc "token request"}
   request-token
   (let [consumer (store/create-consumer :memory)]
-    (is (= 401 ((os/request-token :memory {} ) :status)))
-    (is (= 401 ((os/request-token :memory {:oauth-consumer consumer }) :status)))
-    (is (= 200 ((os/request-token :memory {:oauth-consumer consumer :oauth-params {:oauth_callback "http://blabla.inv/callback"}}) :status)))
-    (is (= 200 ((os/request-token :memory {:oauth-consumer consumer :oauth-params {:oauth_callback "oob"}}) :status)))
-    (let [token-body ((os/request-token :memory 
+    (is (= 401 ((oc/request-token :memory {} ) :status)))
+    (is (= 401 ((oc/request-token :memory {:oauth-consumer consumer }) :status)))
+    (is (= 200 ((oc/request-token :memory {:oauth-consumer consumer :oauth-params {:oauth_callback "http://blabla.inv/callback"}}) :status)))
+    (is (= 200 ((oc/request-token :memory {:oauth-consumer consumer :oauth-params {:oauth_callback "oob"}}) :status)))
+    (let [token-body ((oc/request-token :memory 
                       {:oauth-consumer consumer :oauth-params {:oauth_callback "http://blabla.inv/callback"}}) :body )
           token-params (os/parse-form-encoded token-body)]
       (is (not (nil? token-body)))
