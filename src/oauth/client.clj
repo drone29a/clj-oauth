@@ -40,12 +40,12 @@
           signature-method))
 
 ;;; Parse form-encoded bodies from OAuth responses.
-(defmethod http/entity-as :urldecoded [entity as]
+(defmethod http/entity-as :urldecoded [entity as status]
   (into {}
         (map (fn [kv]
                (let [[k v] (split #"=" kv)]
                  [(keyword k) v]))
-             (split #"&" (http/entity-as entity :string)))))
+             (split #"&" (http/entity-as entity :string status)))))
 
 (defn request-token
   "Fetch request token for the consumer."
