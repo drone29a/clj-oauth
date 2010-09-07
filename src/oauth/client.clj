@@ -85,10 +85,11 @@ to approve the Consumer's access to their account."
   ([consumer request-token]
      (access-token consumer request-token nil))
   ([consumer request-token verifier]
-     (let [unsigned-params (sig/oauth-params consumer request-token verifier)
+     (let [unsigned-params (sig/oauth-params consumer (:oauth_token request-token) verifier)
            signature (sig/sign consumer (sig/base-string "POST"
                                                          (:access-uri consumer)
-                                                         unsigned-params))
+                                                         unsigned-params)
+                               (:oauth_token_secret request-token))
            params (assoc unsigned-params :oauth_signature signature)]
        (success-content
         (http/post (:access-uri consumer)

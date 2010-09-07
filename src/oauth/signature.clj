@@ -49,7 +49,7 @@
 
 (defmethod sign :plaintext
   [c base-string & [token-secret]]
-  (str (url-encode (c :secret)) "&" (url-encode token-secret)))
+  (str (url-encode (:secret c)) "&" (url-encode (or token-secret ""))))
 
 (defn verify [sig digest-method c base-string & [token-secret]]
   (= sig (sign digest-method c base-string token-secret)))
@@ -73,7 +73,7 @@ requires RFC 3986 encoding."
   "Build a map of parameters needed for OAuth requests."
   ([consumer]
      {:oauth_consumer_key (:key consumer)
-      :oauth_signature_method "HMAC-SHA1"
+      :oauth_signature_method (signature-methods (:signature-method consumer))
       :oauth_timestamp (System/currentTimeMillis)
       :oauth_nonce (rand-str 30)
       :oauth_version "1.0"})
