@@ -51,8 +51,9 @@
   [c base-string & [token-secret]]
   (str (url-encode (:secret c)) "&" (url-encode (or token-secret ""))))
 
-(defn verify [sig digest-method c base-string & [token-secret]]
-  (= sig (sign digest-method c base-string token-secret)))
+(defn verify [sig c base-string & [token-secret]]
+  (let [token-secret (url-encode (or token-secret ""))]
+    (= sig (sign c base-string token-secret))))
 
 (defn url-encode
   "The java.net.URLEncoder class encodes for application/x-www-form-urlencoded, but OAuth
