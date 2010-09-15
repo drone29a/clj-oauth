@@ -27,15 +27,16 @@
                       (str (url-encode (as-str k)) "=" (url-encode (as-str v)))) params )))
 (defn base-string
   ([method base-url c t params]
-    (base-string method base-url (assoc params :oauth_consumer_key (:key c)
-                                                :oauth_token (:token t)
-                                                :oauth_signature_method (or (params :oauth_signature_method) 
-                                                                            (signature-methods (:signature-method c)))
-                                                :oauth_version "1.0")))
+     (base-string method base-url (assoc params
+                                    :oauth_consumer_key (:key c)
+                                    :oauth_token (:token t)
+                                    :oauth_signature_method (or (params :oauth_signature_method) 
+                                                                (signature-methods (:signature-method c)))
+                                    :oauth_version "1.0")))
   ([method base-url params]
-  (join "&" [method
-                 (url-encode base-url) 
-                 (url-encode (url-form-encode (sort params)))])))
+     (join "&" [method
+                (url-encode base-url) 
+                (url-encode (url-form-encode (sort params)))])))
 
 (defmulti sign 
   "Sign a base string for authentication."
