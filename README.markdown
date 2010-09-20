@@ -26,7 +26,7 @@ The server support makes it simple to add OAuth support to any [Ring](http://git
                                        :hmac-sha1))
 
     ;; Fetch a request token that a OAuth User may authorize
-    (def request-token (:oauth_token (oauth/request-token consumer)))
+    (def request-token (oauth/request-token consumer))
 
     ;; Send the User to this URI for authorization, they will be able 
     ;; to choose the level of access to grant the application and will
