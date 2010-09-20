@@ -46,7 +46,7 @@
 (defmethod sign :hmac-sha1
   [c base-string & [token-secret]]
   (let [key (str (url-encode (:secret c)) "&" (url-encode (or token-secret "")))]
-    (digest/hmac key base-string)))
+      (digest/hmac key base-string)))
 
 (defmethod sign :plaintext
   [c base-string & [token-secret]]
@@ -76,7 +76,7 @@ requires RFC 3986 encoding."
   ([consumer]
      {:oauth_consumer_key (:key consumer)
       :oauth_signature_method (signature-methods (:signature-method consumer))
-      :oauth_timestamp (System/currentTimeMillis)
+      :oauth_timestamp (int (/ (System/currentTimeMillis) 1000))
       :oauth_nonce (rand-str 30)
       :oauth_version "1.0"})
   ([consumer token]
@@ -84,6 +84,7 @@ requires RFC 3986 encoding."
        :oauth_token token))
   ([consumer token verifier]
      (if verifier
-       (assoc (oauth-params consumer token) :oauth_verifier verifier)
+       (assoc (oauth-params consumer token)
+         :oauth_verifier (str verifier))
        (oauth-params consumer token))))
 
