@@ -3,60 +3,75 @@
             [oauth.signature :as sig] :reload-all)
   (:use clojure.test))
 
+(def twitter-req-params
+     {:oauth_callback "http://localhost:3005/the_dance/process_callback?service_provider_id=11"
+      :oauth_consumer_key "GDdmIQH6jhtmLUypg82g"
+      :oauth_nonce "QP70eNmVz8jvdPevU3oJD2AfF7R7odC2XJcn4XlZJqk"
+      :oauth_signature_method "HMAC-SHA1"
+      :oauth_timestamp "1272323042"
+      :oauth_version "1.0"})
+
 (deftest
     signature-methods
   (is (= (sig/signature-methods :hmac-sha1) "HMAC-SHA1")))
 
 (deftest
     signature-base-string
-  (let [c { :key "dpf43f3p2l4k3l03"
-           :secret "kd94hf93k423kf44"
-           :signature-method :hmac-sha1}
-        t { :token "nnch734d00sl2jdk"
-           :secret "pfkkdhi9sl3r4s00"}]    
+  (is (= (sig/base-string "GET"
+                          "http://photos.example.net/photos"
+                          {:oauth_consumer_key "dpf43f3p2l4k3l03"
+                           :oauth_token "nnch734d00sl2jdk"
+                           :oauth_signature_method "HMAC-SHA1"
+                           :oauth_timestamp "1191242096"
+                           :oauth_nonce "kllo9940pd9333jh"
+                           :oauth_version "1.0"
+                           :file "vacation.jpg"
+                           :size "original"})
+         "GET&http%3A%2F%2Fphotos.example.net%2Fphotos&file%3Dvacation.jpg%26oauth_consumer_key%3Ddpf43f3p2l4k3l03%26oauth_nonce%3Dkllo9940pd9333jh%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D1191242096%26oauth_token%3Dnnch734d00sl2jdk%26oauth_version%3D1.0%26size%3Doriginal"))
 
-    (is (= (sig/base-string "GET"
-                            "http://photos.example.net/photos"
-                            {:oauth_consumer_key "dpf43f3p2l4k3l03"
-                             :oauth_token "nnch734d00sl2jdk"
-                             :oauth_signature_method "HMAC-SHA1"
-                             :oauth_timestamp "1191242096"
-                             :oauth_nonce "kllo9940pd9333jh"
-                             :oauth_version "1.0"
-                             :file "vacation.jpg"
-                             :size "original"})
-           "GET&http%3A%2F%2Fphotos.example.net%2Fphotos&file%3Dvacation.jpg%26oauth_consumer_key%3Ddpf43f3p2l4k3l03%26oauth_nonce%3Dkllo9940pd9333jh%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D1191242096%26oauth_token%3Dnnch734d00sl2jdk%26oauth_version%3D1.0%26size%3Doriginal"))
-
-    (is (= (sig/base-string "GET"
-                            "http://photos.example.net/photos"
-                            c
-                            t
-                            {:oauth_timestamp "1191242096"
-                             :oauth_nonce "kllo9940pd9333jh"
-                             :file "vacation.jpg"
-                             :size "original"})
-           "GET&http%3A%2F%2Fphotos.example.net%2Fphotos&file%3Dvacation.jpg%26oauth_consumer_key%3Ddpf43f3p2l4k3l03%26oauth_nonce%3Dkllo9940pd9333jh%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D1191242096%26oauth_token%3Dnnch734d00sl2jdk%26oauth_version%3D1.0%26size%3Doriginal"))))
+  (is (= (sig/base-string "GET"
+                          "http://photos.example.net/photos"
+                          {:key "dpf43f3p2l4k3l03"
+                           :secret "kd94hf93k423kf44"
+                           :signature-method :hmac-sha1}
+                          {:token "nnch734d00sl2jdk"
+                           :secret "pfkkdhi9sl3r4s00"}
+                          {:oauth_timestamp "1191242096"
+                           :oauth_nonce "kllo9940pd9333jh"
+                           :file "vacation.jpg"
+                           :size "original"})
+         "GET&http%3A%2F%2Fphotos.example.net%2Fphotos&file%3Dvacation.jpg%26oauth_consumer_key%3Ddpf43f3p2l4k3l03%26oauth_nonce%3Dkllo9940pd9333jh%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D1191242096%26oauth_token%3Dnnch734d00sl2jdk%26oauth_version%3D1.0%26size%3Doriginal"))
+  (is (= (sig/base-string "POST"
+                          "https://api.twitter.com/oauth/request_token"
+                          twitter-req-params)
+         "POST&https%3A%2F%2Fapi.twitter.com%2Foauth%2Frequest_token&oauth_callback%3Dhttp%253A%252F%252Flocalhost%253A3005%252Fthe_dance%252Fprocess_callback%253Fservice_provider_id%253D11%26oauth_consumer_key%3DGDdmIQH6jhtmLUypg82g%26oauth_nonce%3DQP70eNmVz8jvdPevU3oJD2AfF7R7odC2XJcn4XlZJqk%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D1272323042%26oauth_version%3D1.0")))
 
 (deftest 
     #^{:doc "Test hmac-sha1 signing of a request."} 
   hmac-sha1-signature
-  (let [c { :key "dpf43f3p2l4k3l03"
-           :secret "kd94hf93k423kf44"
-           :signature-method :hmac-sha1}]
-    
-    (is (= (sig/sign c
-                     (sig/base-string "GET"
-                                      "http://photos.example.net/photos"
-                                      {:oauth_consumer_key "dpf43f3p2l4k3l03"
-                                       :oauth_token "nnch734d00sl2jdk"
-                                       :oauth_signature_method "HMAC-SHA1"
-                                       :oauth_timestamp "1191242096"
-                                       :oauth_nonce "kllo9940pd9333jh"
-                                       :oauth_version "1.0"
-                                       :file "vacation.jpg"
-                                       :size "original"})
-                     "pfkkdhi9sl3r4s00")
-           "tR3+Ty81lMeYAr/Fid0kMTYa/WM="))))
+  (is (= (sig/sign {:key "dpf43f3p2l4k3l03"
+                    :secret "kd94hf93k423kf44"
+                    :signature-method :hmac-sha1}
+                   (sig/base-string "GET"
+                                    "http://photos.example.net/photos"
+                                    {:oauth_consumer_key "dpf43f3p2l4k3l03"
+                                     :oauth_token "nnch734d00sl2jdk"
+                                     :oauth_signature_method "HMAC-SHA1"
+                                     :oauth_timestamp "1191242096"
+                                     :oauth_nonce "kllo9940pd9333jh"
+                                     :oauth_version "1.0"
+                                     :file "vacation.jpg"
+                                     :size "original"})
+                   "pfkkdhi9sl3r4s00")
+         "tR3+Ty81lMeYAr/Fid0kMTYa/WM="))
+
+  ;; Taken from Twitter dev example.
+  (is (= (sig/sign {:signature-method :hmac-sha1
+                    :secret "MCD8BKwGdgPHvAuvgvz4EQpqDAtx89grbuNMRd7Eh98"}
+                   (sig/base-string "POST"
+                                    "https://api.twitter.com/oauth/request_token"
+                                    twitter-req-params))
+         "8wUi7m5HFQy76nowoCThusfgB+Q=")))
 
 (deftest
     #^{:doc "test plaintext signatures"}
