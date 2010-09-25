@@ -45,7 +45,7 @@
   (into {}
         (map (fn [kv]
                (let [[k v] (split #"=" kv)]
-                 [(keyword k) v]))
+                 [(keyword (sig/url-decode k)) (sig/url-decode v)]))
              (split #"&" (http/entity-as entity :string status)))))
 
 (defn request-token
