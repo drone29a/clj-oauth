@@ -1,3 +1,7 @@
+* 1.2.4
+
+- Fixed missed URL decoding of form-encoded responses.
+
 * 1.2.3
 
 - Fixed timestamp bug causing 401's with Twitter.
