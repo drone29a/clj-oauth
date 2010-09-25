@@ -75,13 +75,13 @@ The server support makes it simple to add OAuth support to any [Ring](http://git
 
 # Server Support #
 
-The server support is implemented as Ring middleware. It depends on params middleware already having been run upstream.
+The server support is implemented as Ring middleware. It depends on params middleware already having been run upstream.  The server implementation is incomplete but available in the `server` branch.
 
 # Authors #
 
 Development funded by LikeStream LLC (Don Jackson and Shirish Andhare), see [http://www.likestream.org/opensource.html](http://www.likestream.org/opensource.html).
 
-Designed and developed by Matt Revelle of [Lightpost Software](http://lightpostsoftware.com).
+Designed and developed by Matt Revelle.
 
 Contributions from Richard Newman.
 
