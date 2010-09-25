@@ -1,6 +1,7 @@
 * 1.2.4
 
 - Fixed missed URL decoding of form-encoded responses.
+- Removed server implementation for releases.
 
 * 1.2.3
 
