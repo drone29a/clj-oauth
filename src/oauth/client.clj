@@ -41,21 +41,26 @@
           signature-method))
 
 ;;; Parse form-encoded bodies from OAuth responses.
-(defmethod http/entity-as :urldecoded [entity as status]
+(defmethod http/entity-as :urldecoded
+  [entity as status]
   (into {}
-        (map (fn [kv]
-               (let [[k v] (split #"=" kv)]
-                 [(keyword (sig/url-decode k)) (sig/url-decode v)]))
-             (split #"&" (http/entity-as entity :string status)))))
+        (if-let [body (http/entity-as entity :string status)]
+          (map (fn [kv]
+                 (let [[k v] (split #"=" kv)
+                       k (or k "")
+                       v (or v "")]
+                   [(keyword (sig/url-decode k)) (sig/url-decode v)]))
+               (split #"&" body))
+          nil)))
 
 (defn request-token
   "Fetch request token for the consumer."
   ([consumer]
      (let [unsigned-params (sig/oauth-params consumer)
-           signature (sig/url-encode (sig/sign consumer
-                                               (sig/base-string "POST" 
-                                                                (:request-uri consumer)
-                                                                unsigned-params)))
+           signature (sig/sign consumer
+                               (sig/base-string "POST" 
+                                                (:request-uri consumer)
+                                                unsigned-params))
            params (assoc unsigned-params :oauth_signature signature)]
        (success-content
         (http/post (:request-uri consumer)
@@ -65,11 +70,13 @@
                    :as :urldecoded))))
   ([consumer callback-uri]
      (let [unsigned-params (assoc (sig/oauth-params consumer)
-                             :oauth_callback (sig/url-encode callback-uri))
-           signature (sig/url-encode (sig/sign consumer
-                                               (sig/base-string "POST" 
-                                                                (:request-uri consumer)
-                                                                unsigned-params)))
+                             :oauth_callback (sig/url-encode callback-uri)
+;;                             :oauth_callback callback-uri
+                             )
+           signature (sig/sign consumer
+                               (sig/base-string "POST" 
+                                                (:request-uri consumer)
+                                                unsigned-params))
            params (assoc unsigned-params :oauth_signature signature)]
        (success-content
         (http/post (:request-uri consumer)
@@ -81,13 +88,9 @@
 (defn user-approval-uri
   "Builds the URI to the Service Provider where the User will be prompted
 to approve the Consumer's access to their account."
-  ([consumer token]
-     (.toString (http/resolve-uri (:authorize-uri consumer) 
-                                  {:oauth_token token})))
-  ([consumer token callback-uri]
-     (.toString (http/resolve-uri (:authorize-uri consumer) 
-                                  {:oauth_token token
-                                   :oauth_callback callback-uri}))))
+  [consumer token]
+  (.toString (http/resolve-uri (:authorize-uri consumer) 
+                               {:oauth_token token})))
 
 (defn access-token 
   "Exchange a request token for an access token.
@@ -140,8 +143,8 @@ Authorization HTTP header or added as query parameters to the request."
   "OAuth credentials formatted for the Authorization HTTP header."
   ([oauth-params]
      (str "OAuth " (join ", " (map (fn [[k v]] 
-                                    (str (as-str k) "=\"" v "\""))
-                                  oauth-params))))
+                                     (str (-> k as-str sig/url-encode) "=\"" (-> v as-str sig/url-encode) "\""))
+                                   oauth-params))))
   ([oauth-params realm]
      (authorization-header (assoc oauth-params realm))))
 
