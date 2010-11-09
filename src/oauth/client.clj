@@ -70,9 +70,7 @@
                    :as :urldecoded))))
   ([consumer callback-uri]
      (let [unsigned-params (assoc (sig/oauth-params consumer)
-                             :oauth_callback (sig/url-encode callback-uri)
-;;                             :oauth_callback callback-uri
-                             )
+                             :oauth_callback callback-uri)
            signature (sig/sign consumer
                                (sig/base-string "POST" 
                                                 (:request-uri consumer)
