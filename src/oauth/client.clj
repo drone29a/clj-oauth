@@ -115,8 +115,8 @@ to approve the Consumer's access to their account."
                     :oauth_signature signature)]
        (success-content
         (http/post (:access-uri consumer)
-                   :query params
-;                   :header {"Authorization" (authorization-header params)}
+                   :headers {"Authorization" (authorization-header (assoc params
+                                                                    :oauth_signature signature))}
                    :parameters (http/map->params {:use-expect-continue false})
                    :as :urldecoded)))))
 

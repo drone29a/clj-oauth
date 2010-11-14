@@ -1,3 +1,8 @@
+* 1.2.7
+
+- Fixed bug where author didn't update CHANGES.
+- All authentication uses headers.
+
 * 1.2.4
 
 - Fixed missed URL decoding of form-encoded responses.

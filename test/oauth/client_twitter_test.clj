@@ -9,7 +9,6 @@
                                 "https://api.twitter.com/oauth/access_token"
                                 "https://api.twitter.com/oauth/authorize"
                                 :hmac-sha1))
-
 (deftest
     #^{:doc "Test requesting a token from Twitter.
             Considered to pass if no exception is thrown."}
