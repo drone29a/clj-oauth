@@ -1,3 +1,7 @@
+* 1.2.8
+
+- Added xAuth support.
+
 * 1.2.7
 
 - Fixed bug where author didn't update CHANGES.
