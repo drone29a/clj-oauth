@@ -61,11 +61,11 @@
                                (sig/base-string "POST" 
                                                 (:request-uri consumer)
                                                 unsigned-params))
-           params (assoc unsigned-params :oauth_signature signature)]
+           params (assoc unsigned-params
+                    :oauth_signature signature)]
        (success-content
         (http/post (:request-uri consumer)
-                   :headers {"Authorization" (authorization-header (assoc params
-                                                                     :oauth_signature signature))}
+                   :headers {"Authorization" (authorization-header params)}
                    :parameters (http/map->params {:use-expect-continue false})
                    :as :urldecoded))))
   ([consumer callback-uri]
@@ -75,11 +75,11 @@
                                (sig/base-string "POST" 
                                                 (:request-uri consumer)
                                                 unsigned-params))
-           params (assoc unsigned-params :oauth_signature signature)]
+           params (assoc unsigned-params
+                    :oauth_signature signature)]
        (success-content
         (http/post (:request-uri consumer)
-                   :headers {"Authorization" (authorization-header (assoc params
-                                                                     :oauth_signature signature))}
+                   :headers {"Authorization" (authorization-header params)}
                    :parameters (http/map->params {:use-expect-continue false})
                    :as :urldecoded)))))
 
@@ -93,13 +93,7 @@ to approve the Consumer's access to their account."
 (defn access-token 
   "Exchange a request token for an access token.
   When provided with two arguments, this function operates as per OAuth 1.0.
-  With three arguments, a verifier is used:
-
-      http://wiki.oauth.net/Signed-Callback-URLs
-
-  This allows Twitter's PIN pass-back:
-
-      http://apiwiki.twitter.com/Authentication"
+  With three arguments, a verifier is used."
   ([consumer request-token]
      (access-token consumer request-token nil))
   ([consumer request-token verifier]
@@ -115,10 +109,30 @@ to approve the Consumer's access to their account."
                     :oauth_signature signature)]
        (success-content
         (http/post (:access-uri consumer)
-                   :headers {"Authorization" (authorization-header (assoc params
-                                                                    :oauth_signature signature))}
+                   :headers {"Authorization" (authorization-header params)}
                    :parameters (http/map->params {:use-expect-continue false})
                    :as :urldecoded)))))
+
+(defn xauth-access-token
+  "Request an access token with a username and password with xAuth."
+  [consumer username password]
+  (let [oauth-params (sig/oauth-params consumer)
+        post-params {:x_auth_username username
+                     :x_auth_password password
+                     :x_auth_mode "client_auth"}
+        signature (sig/sign consumer
+                            (sig/base-string "POST"
+                                             (:access-uri consumer)
+                                             (merge oauth-params
+                                                    post-params)))
+        params (assoc oauth-params
+                 :oauth_signature signature)]
+    (success-content
+     (http/post (:access-uri consumer)
+                :query post-params
+                :headers {"Authorization" (authorization-header params)}
+                :parameters (http/map->params {:use-expect-continue false})
+                :as :urldecoded))))
 
 (defn credentials
   "Return authorization credentials needed for access to protected resources.  
