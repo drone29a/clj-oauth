@@ -3,8 +3,7 @@
             [oauth.signature :as sig] :reload-all)
   (:use clojure.test))
 
-(deftest
-    #^{:doc "Test creation of authorization header."}
+(deftest ^{:doc "Test creation of authorization header."}
   authorization-header
   (let [c (oc/make-consumer "GDdmIQH6jhtmLUypg82g"
                             "MCD8BKwGdgPHvAuvgvz4EQpqDAtx89grbuNMRd7Eh98"
@@ -29,3 +28,15 @@
     #_(is (= (oc/authorization-header params)
            "OAuth oauth_nonce=\"QP70eNmVz8jvdPevU3oJD2AfF7R7odC2XJcn4XlZJqk\", oauth_callback=\"http%3A%2F%2Flocalhost%3A3005%2Fthe_dance%2Fprocess_callback%3Fservice_provider_id%3D11\", oauth_signature_method=\"HMAC-SHA1\", oauth_timestamp=\"1272323042\", oauth_consumer_key=\"GDdmIQH6jhtmLUypg82g\", oauth_signature=\"8wUi7m5HFQy76nowoCThusfgB%2BQ%3D\", oauth_version=\"1.0\""))))
            
+(deftest ^{:doc "Test creation of approval URL"}
+  user-approval-uri
+  (let [c (oc/make-consumer "GDdmIQH6jhtmLUypg82g"
+                            "MCD8BKwGdgPHvAuvgvz4EQpqDAtx89grbuNMRd7Eh98"
+                            "https://api.twitter.com/oauth/request_token"
+                            "https://api.twitter.com/oauth/access_token"
+                            "https://api.twitter.com/oauth/authorize"
+                            :hmac-sha1)
+        t {:oauth_token "nnch734d00sl2jdk"}]
+    ;; The approval URL should only use the :oauth_token in the User approval URI
+    (is (= "https://api.twitter.com/oauth/authorize?oauth_token=nnch734d00sl2jdk"
+           (oc/user-approval-uri c t)))))
