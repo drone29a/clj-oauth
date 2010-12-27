@@ -1,3 +1,7 @@
+* 1.2.9
+
+- Fixed user approval URL.  Only oauth_token param is added to URL.
+
 * 1.2.8
 
 - Added xAuth support.
