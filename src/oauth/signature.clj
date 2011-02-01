@@ -83,8 +83,6 @@ requires RFC 3986 encoding."
      (assoc (oauth-params consumer) 
        :oauth_token token))
   ([consumer token verifier]
-     (if verifier
-       (assoc (oauth-params consumer token)
-         :oauth_verifier (str verifier))
-       (oauth-params consumer token))))
+     (assoc (oauth-params consumer token)
+       :oauth_verifier (str verifier))))
 

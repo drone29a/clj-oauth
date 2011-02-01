@@ -41,10 +41,27 @@
                            :file "vacation.jpg"
                            :size "original"})
          "GET&http%3A%2F%2Fphotos.example.net%2Fphotos&file%3Dvacation.jpg%26oauth_consumer_key%3Ddpf43f3p2l4k3l03%26oauth_nonce%3Dkllo9940pd9333jh%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D1191242096%26oauth_token%3Dnnch734d00sl2jdk%26oauth_version%3D1.0%26size%3Doriginal"))
+
   (is (= (sig/base-string "POST"
                           "https://api.twitter.com/oauth/request_token"
-                          twitter-req-params)
-         "POST&https%3A%2F%2Fapi.twitter.com%2Foauth%2Frequest_token&oauth_callback%3Dhttp%253A%252F%252Flocalhost%253A3005%252Fthe_dance%252Fprocess_callback%253Fservice_provider_id%253D11%26oauth_consumer_key%3DGDdmIQH6jhtmLUypg82g%26oauth_nonce%3DQP70eNmVz8jvdPevU3oJD2AfF7R7odC2XJcn4XlZJqk%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D1272323042%26oauth_version%3D1.0")))
+                          {:oauth_callback "http://localhost:3005/the_dance/process_callback?service_provider_id=11"
+                           :oauth_consumer_key "GDdmIQH6jhtmLUypg82g"
+                           :oauth_nonce "QP70eNmVz8jvdPevU3oJD2AfF7R7odC2XJcn4XlZJqk"
+                           :oauth_signature_method "HMAC-SHA1"
+                           :oauth_timestamp "1272323042"
+                           :oauth_version "1.0"})
+         "POST&https%3A%2F%2Fapi.twitter.com%2Foauth%2Frequest_token&oauth_callback%3Dhttp%253A%252F%252Flocalhost%253A3005%252Fthe_dance%252Fprocess_callback%253Fservice_provider_id%253D11%26oauth_consumer_key%3DGDdmIQH6jhtmLUypg82g%26oauth_nonce%3DQP70eNmVz8jvdPevU3oJD2AfF7R7odC2XJcn4XlZJqk%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D1272323042%26oauth_version%3D1.0"))
+
+  (is (= (sig/base-string "POST"
+                          "https://api.twitter.com/oauth/access_token"
+                          {:oauth_consumer_key "GDdmIQH6jhtmLUypg82g"
+                           :oauth_nonce "9zWH6qe0qG7Lc1telCn7FhUbLyVdjEaL3MO5uHxn8"
+                           :oauth_signature_method "HMAC-SHA1"
+                           :oauth_token "8ldIZyxQeVrFZXFOZH5tAwj6vzJYuLQpl0WUEYtWc"
+                           :oauth_timestamp "1272323047"
+                           :oauth_verifier "pDNg57prOHapMbhv25RNf75lVRd6JDsni1AJJIDYoTY"
+                           :oauth_version "1.0"})
+         "POST&https%3A%2F%2Fapi.twitter.com%2Foauth%2Faccess_token&oauth_consumer_key%3DGDdmIQH6jhtmLUypg82g%26oauth_nonce%3D9zWH6qe0qG7Lc1telCn7FhUbLyVdjEaL3MO5uHxn8%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D1272323047%26oauth_token%3D8ldIZyxQeVrFZXFOZH5tAwj6vzJYuLQpl0WUEYtWc%26oauth_verifier%3DpDNg57prOHapMbhv25RNf75lVRd6JDsni1AJJIDYoTY%26oauth_version%3D1.0")))
 
 (deftest 
     #^{:doc "Test hmac-sha1 signing of a request."} 
@@ -70,16 +87,33 @@
                     :secret "MCD8BKwGdgPHvAuvgvz4EQpqDAtx89grbuNMRd7Eh98"}
                    (sig/base-string "POST"
                                     "https://api.twitter.com/oauth/request_token"
-                                    twitter-req-params))
-         "8wUi7m5HFQy76nowoCThusfgB+Q=")))
+                                    {:oauth_callback "http://localhost:3005/the_dance/process_callback?service_provider_id=11"
+                                     :oauth_consumer_key "GDdmIQH6jhtmLUypg82g"
+                                     :oauth_nonce "QP70eNmVz8jvdPevU3oJD2AfF7R7odC2XJcn4XlZJqk"
+                                     :oauth_signature_method "HMAC-SHA1"
+                                     :oauth_timestamp "1272323042"
+                                     :oauth_version "1.0"}))
+         "8wUi7m5HFQy76nowoCThusfgB+Q="))
+  (is (= (sig/sign {:signature-method :hmac-sha1
+                    :secret "MCD8BKwGdgPHvAuvgvz4EQpqDAtx89grbuNMRd7Eh98"}
+                   (sig/base-string "POST"
+                                    "https://api.twitter.com/oauth/access_token"
+                                    {:oauth_consumer_key "GDdmIQH6jhtmLUypg82g"
+                                     :oauth_nonce "9zWH6qe0qG7Lc1telCn7FhUbLyVdjEaL3MO5uHxn8"
+                                     :oauth_signature_method "HMAC-SHA1"
+                                     :oauth_token "8ldIZyxQeVrFZXFOZH5tAwj6vzJYuLQpl0WUEYtWc"
+                                     :oauth_timestamp "1272323047"
+                                     :oauth_verifier "pDNg57prOHapMbhv25RNf75lVRd6JDsni1AJJIDYoTY"
+                                     :oauth_version "1.0"})
+                   "x6qpRnlEmW9JbQn4PQVVeVG8ZLPEx6A0TOebgwcuA")
+         "PUw/dHA4fnlJYM6RhXk5IU/0fCc=")))
 
 (deftest
     #^{:doc "test plaintext signatures"}
   plaintext-signature
   (let [c { :key "dpf43f3p2l4k3l03"
            :secret "kd94hf93k423kf44"
-           :signature-method :plaintext}]  ; I'm intentionally testing with this as sha1
-    
+           :signature-method :plaintext}]
     (is (= "kd94hf93k423kf44&" (sig/sign c
                                          (sig/base-string "POST"
                                                           "https://photos.example.net/request_token"
