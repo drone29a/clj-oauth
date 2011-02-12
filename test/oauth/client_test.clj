@@ -65,7 +65,7 @@
                             "https://api.twitter.com/oauth/access_token"
                             "https://api.twitter.com/oauth/authorize"
                             :hmac-sha1)
-        t {:oauth_token "nnch734d00sl2jdk"}]
+        t "nnch734d00sl2jdk"]
     ;; The approval URL should only use the :oauth_token in the User approval URI
     (is (= "https://api.twitter.com/oauth/authorize?oauth_token=nnch734d00sl2jdk"
            (oc/user-approval-uri c t)))))

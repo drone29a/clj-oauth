@@ -88,7 +88,7 @@
 to approve the Consumer's access to their account."
   [consumer token]
   (.toString (http/resolve-uri (:authorize-uri consumer) 
-                               {:oauth_token (:oauth_token token)})))
+                               {:oauth_token token})))
 
 (defn access-token 
   "Exchange a request token for an access token.

@@ -1,4 +1,4 @@
-(defproject clj-oauth "1.2.9"
+(defproject clj-oauth "1.2.10-SNAPSHOT"
   :description "OAuth support for Clojure"
   :dependencies [[org.clojure/clojure "1.2.0"]
                  [org.clojure/clojure-contrib "1.2.0"]
