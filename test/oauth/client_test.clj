@@ -69,3 +69,27 @@
     ;; The approval URL should only use the :oauth_token in the User approval URI
     (is (= "https://api.twitter.com/oauth/authorize?oauth_token=nnch734d00sl2jdk"
            (oc/user-approval-uri c t)))))
+
+(deftest ^{:doc "Test creation of authorization header for refresh access_token request"}
+  refresh-token-authorization-header
+  (let [c (oc/make-consumer "GDdmIQH6jhtmLUypg82g"
+                            "MCD8BKwGdgPHvAuvgvz4EQpqDAtx89grbuNMRd7Eh98"
+                            "https://api.twitter.com/oauth/request_token"
+                            "https://api.twitter.com/oauth/access_token"
+                            "https://api.twitter.com/oauth/authorize"
+                            :hmac-sha1)
+        unsigned-params (merge (sig/oauth-params c)
+                               {:oauth_consumer_key "GDdmIQH6jhtmLUypg82g"
+                                :oauth_nonce "9zWH6qe0qG7Lc1telCn7FhUbLyVdjEaL3MO5uHxn8"
+                                :oauth_signature_method "HMAC-SHA1"
+                                :oauth_token "8ldIZyxQeVrFZXFOZH5tAwj6vzJYuLQpl0WUEYtWc"
+                                :oauth_timestamp "1272323047"
+                                :oauth_version "1.0"}
+                               {:oauth_session_handle "5a10ddsqoqo2rfi"})
+        signature (sig/sign c (sig/base-string "POST"
+                                               (:request-uri c)
+                                               unsigned-params))
+        params (assoc unsigned-params
+                 :oauth_signature signature)]
+    (is (= (oc/authorization-header (sort params))
+           "OAuth oauth_consumer_key=\"GDdmIQH6jhtmLUypg82g\", oauth_nonce=\"9zWH6qe0qG7Lc1telCn7FhUbLyVdjEaL3MO5uHxn8\", oauth_session_handle=\"5a10ddsqoqo2rfi\", oauth_signature=\"f15S84zVZ96f9PwAJrBHq28KIF4%3D\", oauth_signature_method=\"HMAC-SHA1\", oauth_timestamp=\"1272323047\", oauth_token=\"8ldIZyxQeVrFZXFOZH5tAwj6vzJYuLQpl0WUEYtWc\", oauth_version=\"1.0\""))))
