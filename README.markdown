@@ -26,17 +26,17 @@ The server support makes it simple to add OAuth support to any [Ring](http://git
                                        :hmac-sha1))
 
     ;; Fetch a request token that a OAuth User may authorize
-    (def request-token (oauth/request-token consumer))
-
-    ;; Send the User to this URI for authorization, they will be able 
-    ;; to choose the level of access to grant the application and will
-    ;; then be redirected to the callback URI provided.
     ;; 
     ;; If you are using OAuth with a desktop application, a callback URI
     ;; is not required. 
+    (def request-token (oauth/request-token consumer <callback-uri>))
+
+    ;; Send the User to this URI for authorization, they will be able 
+    ;; to choose the level of access to grant the application and will
+    ;; then be redirected to the callback URI provided with the
+    ;; request-token.
     (oauth/user-approval-uri consumer 
-                             request-token
-                             <callback-uri>)
+                             (:oauth_token request-token))
 
     ;; Assuming the User has approved the request token, trade it for an access token.
     ;; The access token will then be used when accessing protected resources for the User.
