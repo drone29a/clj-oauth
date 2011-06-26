@@ -2,7 +2,6 @@
 
   <!-- Override these with -Dclojure.jar=... in your Ant invocation. -->
   <property name="clojure.jar" location="/opt/clojure/clojure.jar"/>
-  <property name="clojure.contrib.jar" location="/opt/clojure-contrib/clojure-contrib.jar"/>
   
   <available property="hasclojure" file="${clojure.jar}"/>
   
@@ -42,7 +41,6 @@
         <path location="${lib}/commons-codec-1.3.jar"/>
         
         <path location="${clojure.jar}"/>
-        <path location="${clojure.contrib.jar}"/>
       </classpath>
       
       <sysproperty key="clojure.compile.path" value="${build}"/>
