@@ -242,11 +242,11 @@
   url-form-encode
   (is (= (sig/url-form-encode {}) ""))
   (is (= (sig/url-form-encode {"hello" "there"}) "hello=there"))
-  (is (= (sig/url-form-encode {"hello" "there" "name" "Bill" }) "hello=there&name=Bill"))
+  (is (= (sig/url-form-encode {"hello" "there" "name" "Bill" }) "name=Bill&hello=there"))
   
   (is (= (sig/url-form-encode {:hello "there"}) "hello=there"))
-  (is (= (sig/url-form-encode {:hello "there" :name "Bill" }) "hello=there&name=Bill"))
+  (is (= (sig/url-form-encode {:hello "there" :name "Bill" }) "name=Bill&hello=there"))
 
   (is (= (sig/url-form-encode {:hello "there"}) "hello=there"))
-  (is (= (sig/url-form-encode {:hello "there" :name "Bill Smith" }) "hello=there&name=Bill%20Smith")))
+  (is (= (sig/url-form-encode {:hello "there" :name "Bill Smith" }) "name=Bill%20Smith&hello=there")))
 
