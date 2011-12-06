@@ -4,4 +4,7 @@ lib
 classes
 *.jar
 pom.xml
+.lein-deps-sum
+.lein-failures
+test/oauth/twitter_keys.clj
 
