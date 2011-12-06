@@ -3,8 +3,8 @@
   (:use clojure.test)
   (:load "twitter_keys"))
 
-(def consumer (oc/make-consumer key
-                                secret
+(def consumer (oc/make-consumer consumer-key
+                                consumer-secret
                                 "https://api.twitter.com/oauth/request_token"
                                 "https://api.twitter.com/oauth/access_token"
                                 "https://api.twitter.com/oauth/authorize"
