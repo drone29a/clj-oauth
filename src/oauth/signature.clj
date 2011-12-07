@@ -13,6 +13,8 @@
 
 (def secure-random (java.security.SecureRandom/getInstance "SHA1PRNG"))
 
+(def ^{:dynamic true} *dump-base-string* false)
+
 (defn rand-str 
   "Random string for OAuth requests."
   [length]
@@ -34,9 +36,11 @@
                                                                 (signature-methods (:signature-method c)))
                                     :oauth_version "1.0")))
   ([method base-url params]
-     (str/join "&" [method
-                    (url-encode base-url) 
-                    (url-encode (url-form-encode (sort params)))])))
+     (let [base-str (str/join "&" [method
+				   (url-encode base-url) 
+				   (url-encode (url-form-encode (sort params)))])]
+       (when *dump-base-string* (prn (str "base-string:" base-str)))
+       base-str)))
 
 (defmulti sign 
   "Sign a base string for authentication."
