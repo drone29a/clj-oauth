@@ -3,7 +3,8 @@
        :doc "OAuth client library for Clojure."} 
   oauth.signature
   (:require [oauth.digest :as digest]
-            [clojure.string :as str]))
+            [clojure.string :as str])
+  (:import [java.net URI]))
 
 (declare rand-str
          base-string
@@ -27,6 +28,21 @@
 (defn url-form-encode [params]
   (str/join "&" (map (fn [[k v]]
                        (str (url-encode (name k)) "=" (url-encode (str v)))) params )))
+
+(defn normalize [url]
+  "Normalize the URL before using in the Signature Base String.
+   see http://tools.ietf.org/html/rfc5849#section-3.4.1.2"
+  (let [uri (URI. url)
+	scheme (.getScheme uri)
+	host (.getHost uri)
+	port (.getPort uri)
+	path (.getPath uri)
+	hide-port? (or (neg? port)
+		       (and (= 80 port) (= "http" scheme))
+		       (and (= 443 port) (= "https" scheme)))
+	normalized (str scheme "://" host (when-not hide-port? (str ":" port)) path)]
+    (.toLowerCase normalized)))
+
 (defn base-string
   ([method base-url c t params]
      (base-string method base-url (assoc params
@@ -37,7 +53,7 @@
                                     :oauth_version "1.0")))
   ([method base-url params]
      (let [base-str (str/join "&" [method
-				   (url-encode base-url) 
+				   (url-encode (normalize base-url))
 				   (url-encode (url-form-encode (sort params)))])]
        (when *dump-base-string* (prn (str "base-string:" base-str)))
        base-str)))
