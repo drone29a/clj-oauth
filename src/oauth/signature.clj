@@ -15,6 +15,7 @@
 (def secure-random (java.security.SecureRandom/getInstance "SHA1PRNG"))
 
 (def ^{:dynamic true} *dump-base-string* false)
+(def ^{:dynamic true} *normalize-should-downcase* true)
 
 (defn rand-str 
   "Random string for OAuth requests."
@@ -41,7 +42,9 @@
 		       (and (= 80 port) (= "http" scheme))
 		       (and (= 443 port) (= "https" scheme)))
 	normalized (str scheme "://" host (when-not hide-port? (str ":" port)) path)]
-    (.toLowerCase normalized)))
+    (if *normalize-should-downcase*
+      (.toLowerCase normalized)
+      normalized)))
 
 (defn base-string
   ([method base-url c t params]

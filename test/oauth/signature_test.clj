@@ -17,6 +17,33 @@
 
 (deftest
     signature-base-string
+
+  (is (= (sig/base-string "GET"
+			  "http://www.example.com/Monkeys?a=b"
+			  {:key "CONSUMERKEY"
+			   :secret "SECRET"
+                           :signature-method :hmac-sha1}
+                          {:token "TOKEN"
+                           :secret "TOKENSECRET"}
+                          {:oauth_timestamp "12345"
+                           :oauth_nonce "NONCE"
+                           :a "b"})
+	 "GET&http%3A%2F%2Fwww.example.com%2Fmonkeys&a%3Db%26oauth_consumer_key%3DCONSUMERKEY%26oauth_nonce%3DNONCE%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D12345%26oauth_token%3DTOKEN%26oauth_version%3D1.0"))
+
+  (binding [sig/*normalize-should-downcase* false]
+    (is (= (sig/base-string "GET"
+			    "http://www.example.com/Monkeys?a=b"
+			    {:key "CONSUMERKEY"
+			     :secret "SECRET"
+			     :signature-method :hmac-sha1}
+			    {:token "TOKEN"
+			     :secret "TOKENSECRET"}
+			    {:oauth_timestamp "12345"
+			     :oauth_nonce "NONCE"
+			     :a "b"})
+	   "GET&http%3A%2F%2Fwww.example.com%2FMonkeys&a%3Db%26oauth_consumer_key%3DCONSUMERKEY%26oauth_nonce%3DNONCE%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D12345%26oauth_token%3DTOKEN%26oauth_version%3D1.0")))
+
+  
   (is (= (sig/base-string "GET"
                           "http://photos.example.net/photos"
                           {:oauth_consumer_key "dpf43f3p2l4k3l03"
