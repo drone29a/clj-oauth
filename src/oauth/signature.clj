@@ -55,7 +55,7 @@
                                                                 (signature-methods (:signature-method c)))
                                     :oauth_version "1.0")))
   ([method base-url params]
-     (let [base-str (str/join "&" [method
+     (let [base-str (str/join "&" [(.toUpperCase method)
 				   (url-encode (normalize base-url))
 				   (url-encode (url-form-encode (sort params)))])]
        (when *dump-base-string* (prn (str "base-string:" base-str)))
