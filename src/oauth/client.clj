@@ -116,6 +116,25 @@ to approve the Consumer's access to their account."
                    :parameters (http/map->params {:use-expect-continue false})
                    :as :urldecoded)))))
 
+(defn refresh-token
+  "Exchange an expired access token for a new access token."
+  [consumer expired-token]
+  (let [unsigned-params (assoc (sig/oauth-params consumer
+                                                 (:oauth_token expired-token))
+                          :oauth_session_handle (:oauth_session_handle expired-token))
+        signature (sig/sign consumer
+                            (sig/base-string "POST"
+                                             (:access-uri consumer)
+                                             unsigned-params)
+                            (:oauth_token_secret expired-token))
+        params (assoc unsigned-params
+                 :oauth_signature signature)]
+    (success-content
+     (http/post (:access-uri consumer)
+                :headers {"Authorization" (authorization-header params)}
+                :parameters (http/map->params {:use-expect-continue false})
+                :as :urldecoded))))
+
 (defn xauth-access-token
   "Request an access token with a username and password with xAuth."
   [consumer username password]
