@@ -11,6 +11,17 @@ The server support makes it simple to add OAuth support to any [Ring](http://git
 
 `lein jar`
 
+# Running Tests #
+
+Create a file test/oauth/twitter_keys.clj that contains the consumer key and secret you obtained from http://twitter.com/oauth_clients/new
+
+``` clojure
+(def consumer-key "blah")
+(def consumer-secret "itsasecret")
+```
+
+`lein test`
+
 # Client Example #
 
     (require ['oauth.client :as 'oauth])
