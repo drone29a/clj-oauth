@@ -5,7 +5,7 @@
   (:require [oauth.digest :as digest]
             [oauth.signature :as sig]
             [com.twinql.clojure.http :as http])
-  (:use [clojure.contrib.string :only [as-str join split upper-case]]))
+  (:use [clojure.string :only [join split upper-case]]))
 
 (declare success-content
          authorization-header)
@@ -46,11 +46,11 @@
   (into {}
         (if-let [body (http/entity-as entity :string status)]
           (map (fn [kv]
-                 (let [[k v] (split #"=" kv)
+                 (let [[k v] (split kv #"=")
                        k (or k "")
                        v (or v "")]
                    [(keyword (sig/url-decode k)) (sig/url-decode v)]))
-               (split #"&" body))
+               (split body #"&"))
           nil)))
 
 (defn request-token
@@ -147,7 +147,7 @@ Authorization HTTP header or added as query parameters to the request."
                                   unsigned-oauth-params)
            signature (sig/sign consumer 
                                (sig/base-string (-> request-method
-                                                    as-str
+                                                    sig/as-str
                                                     upper-case)
                                                 request-uri
                                                  unsigned-params)
@@ -158,7 +158,7 @@ Authorization HTTP header or added as query parameters to the request."
   "OAuth credentials formatted for the Authorization HTTP header."
   ([oauth-params]
      (str "OAuth " (join ", " (map (fn [[k v]] 
-                                     (str (-> k as-str sig/url-encode) "=\"" (-> v as-str sig/url-encode) "\""))
+                                     (str (-> k sig/as-str sig/url-encode) "=\"" (-> v sig/as-str sig/url-encode) "\""))
                                    oauth-params))))
   ([oauth-params realm]
      (authorization-header (assoc oauth-params realm))))

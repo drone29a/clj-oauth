@@ -3,13 +3,21 @@
        :doc "OAuth client library for Clojure."} 
   oauth.signature
   (:require [oauth.digest :as digest])
-  (:use [clojure.contrib.string :only [join as-str]]))
+  (:use [clojure.string :only [join]]))
 
 (declare rand-str
          base-string
          sign
          url-encode
          oauth-params)
+
+(defn- named? [a]
+  (instance? clojure.lang.Named a))
+
+(defn as-str [a]
+  (if (named? a)
+    (name a)
+    (str a)))
 
 (def secure-random (java.security.SecureRandom/getInstance "SHA1PRNG"))
 
