@@ -24,7 +24,8 @@
 
 
 (def signature-methods {:hmac-sha1 "HMAC-SHA1"
-                        :plaintext "PLAINTEXT"})
+                        :plaintext "PLAINTEXT"
+			:rsa-sha1 "RSA-SHA1"})
 
 (defn url-form-encode [params]
   (str/join "&" (map (fn [[k v]]
@@ -74,6 +75,11 @@
 (defmethod sign :plaintext
   [c base-string & [token-secret]]
   (str (url-encode (:secret c)) "&" (url-encode (or token-secret ""))))
+
+(defmethod sign :rsa-sha1
+  [c base-string & [token-secret]]
+  (let [key (str (url-encode (:secret c)) "&" (url-encode (or token-secret "")))]
+    (digest/rsa key base-string)))
 
 (defn verify [sig c base-string & [token-secret]]
   (let [token-secret (url-encode (or token-secret ""))]

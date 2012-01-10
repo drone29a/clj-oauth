@@ -13,7 +13,8 @@
 
 (deftest
     signature-methods
-  (is (= (sig/signature-methods :hmac-sha1) "HMAC-SHA1")))
+  (is (= (sig/signature-methods :hmac-sha1) "HMAC-SHA1"))
+  (is (= (sig/signature-methods :rsa-sha1) "RSA-SHA1")))
 
 (deftest
     signature-base-string
@@ -213,6 +214,35 @@
                                                                            :oauth_verifier "hfdp7dh39dks9884"
                                                                            :oauth_version "1.0"})
                                                          "hdhd0244k9j7ao03")))))
+
+(deftest
+    #^{:doc "test rsa-sha1 signatures"}
+  rsa-sha1-signature
+  (let [c {:key "dpf43f3p2l4k3l03"
+           :secret "kd94hf93k423kf44"
+           :signature-method :rsa-sha1}]
+    (is (= "YpkhJYmKjwAprqQ0JO4sSkpo09F3kc/D12dRoDmi5q/S096krV0B1PpZl5Rb8acP9yvileXFMQaU4lvOya1PJ2g9wUMfewOwRn3Ua7Uudk7VXpaFJhTenktWBEh+2YjxUPEkD3vFPdc+R/n5FEHzYSyQ6b270vrTh+4nyuPUz5RKBzdiccKMfcsEMMrN097Nmpz+Tt6Zpbv2zvxz/TYPT3lfi7CKTtpqD3WSPD+nyAXc+n0n8xgqZdQ+BcoVWcIxUNKZHmxmDhAWoPrMpZmO1krRy1JPq8eHPrLWn0Owqw2LAcPCEmLzF/lwrBCIbIAJcTIoEYMycmM2wE46x9L2ew=="
+	   (sig/sign c
+		     (sig/base-string "POST"
+				      "https://photos.example.net/request_token"
+				      {:oauth_consumer_key "dpf43f3p2l4k3l03"
+				       :oauth_signature_method "RSA-SHA1"
+				       :oauth_timestamp "1191242090"
+				       :oauth_nonce "hsu94j3884jdopsl"
+				       :oauth_version "1.0"}))))
+
+    (is (= "HSrsfpD8CTgov5d09skqoIo7ovj3tQrvYHpQ/HwrlbTGBcJy7S4Vu4vnGcbrnAZGCUL1+loKIpvQY/Fj72VtVhnuBirDfqmdbSTQNYgDDELmUhacVqLhLoysMNAs9WWWNpmaZkgD7cKbtdLJ6+oMCsGqUGHj1rUqb37fqfgYNkajj47Ai0y1FT3+BaeGXf5d68o56UIIK3jcq1ibCdORd7S0onxPG95cqo4bTxrPejxqJdZGGtYg6q3MlQGEBKm4qVbRjoITTz5VgoIz9sIDYfX9/GWVxk2y6wc3F+D7Ue6RPc3KyorSLqwa92tQ0rXhLnmhHWoC5BcnDB0oYPlJaw=="
+	   (sig/sign c
+		     (sig/base-string "POST"
+				      "https://photos.example.net/access_token"
+				      {:oauth_consumer_key "dpf43f3p2l4k3l03"
+				       :oauth_signature_method "RSA-SHA1"
+				       :oauth_timestamp "1191242090"
+				       :oauth_token "hh5s93j4hdidpola"
+				       :oauth_nonce "hsu94j3884jdopsl"
+				       :oauth_verifier "hfdp7dh39dks9884"
+				       :oauth_version "1.0"})
+		     "hdhd0244k9j7ao03")))))
 
 (deftest 
     #^{:doc "Test verification of signed request."} 
