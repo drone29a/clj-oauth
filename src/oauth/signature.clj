@@ -62,6 +62,9 @@
        (when *dump-base-string* (prn (str "base-string:" base-str)))
        base-str)))
 
+(defn- make-sig-key [c token-secret]
+  (str (url-encode (:secret c)) "&" (url-encode (or token-secret ""))))
+
 (defmulti sign 
   "Sign a base string for authentication."
   {:arglists '([consumer base-string & [token-secret]])}
@@ -69,17 +72,15 @@
 
 (defmethod sign :hmac-sha1
   [c base-string & [token-secret]]
-  (let [key (str (url-encode (:secret c)) "&" (url-encode (or token-secret "")))]
-      (digest/hmac key base-string)))
+  (digest/hmac (make-sig-key c token-secret) base-string))
 
 (defmethod sign :plaintext
   [c base-string & [token-secret]]
-  (str (url-encode (:secret c)) "&" (url-encode (or token-secret ""))))
+  (make-sig-key c token-secret))
 
 (defmethod sign :rsa-sha1
-  [c base-string & [token-secret]]
-  (let [key (str (url-encode (:secret c)) "&" (url-encode (or token-secret "")))]
-    (digest/rsa key base-string)))
+  [c base-string & [token-secret ]]
+  (digest/rsa (make-sig-key c token-secret) base-string))
 
 (defn verify [sig c base-string & [token-secret]]
   (let [token-secret (url-encode (or token-secret ""))]

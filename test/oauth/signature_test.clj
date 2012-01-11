@@ -1,6 +1,7 @@
 (ns oauth.signature-test
   (:require [oauth.client :as oc]
-            [oauth.signature :as sig] :reload-all)
+            [oauth.signature :as sig]
+	    [oauth.digest :as digest] :reload-all)
   (:use clojure.test))
 
 (def twitter-req-params
@@ -221,6 +222,7 @@
   (let [c {:key "dpf43f3p2l4k3l03"
            :secret "kd94hf93k423kf44"
            :signature-method :rsa-sha1}]
+    (digest/initialise-signature-generator "test-resources/fake-keys/keystore.ImportKey" "importkey" "importkey" "importkey")
     (is (= "YpkhJYmKjwAprqQ0JO4sSkpo09F3kc/D12dRoDmi5q/S096krV0B1PpZl5Rb8acP9yvileXFMQaU4lvOya1PJ2g9wUMfewOwRn3Ua7Uudk7VXpaFJhTenktWBEh+2YjxUPEkD3vFPdc+R/n5FEHzYSyQ6b270vrTh+4nyuPUz5RKBzdiccKMfcsEMMrN097Nmpz+Tt6Zpbv2zvxz/TYPT3lfi7CKTtpqD3WSPD+nyAXc+n0n8xgqZdQ+BcoVWcIxUNKZHmxmDhAWoPrMpZmO1krRy1JPq8eHPrLWn0Owqw2LAcPCEmLzF/lwrBCIbIAJcTIoEYMycmM2wE46x9L2ew=="
 	   (sig/sign c
 		     (sig/base-string "POST"
