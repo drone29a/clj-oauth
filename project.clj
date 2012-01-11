@@ -1,4 +1,4 @@
-(defproject org.clojars.doooks/clj-oauth "1.2.15"
+(defproject org.clojars.doooks/clj-oauth "1.2.17"
   :description "OAuth support for Clojure"
   :dependencies [[org.clojure/clojure "1.3.0"]
                  [org.clojars.adamwynne/clj-apache-http "2.3.2"]
