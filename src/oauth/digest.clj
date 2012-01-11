@@ -23,12 +23,13 @@
 that can be passed to the rsa function as the source of the key used
 in the signing process."
   [keystore-path keystore-password key-alias key-password]
-  (let [algorithm-name "SHA1WithRSA"
-	keystore (doto (KeyStore/getInstance (KeyStore/getDefaultType))
-		   (.load (io/input-stream keystore-path) (.toCharArray keystore-password)))
-	private-key (.. keystore (getKey key-alias (.toCharArray key-password)))]
-    #(doto (Signature/getInstance algorithm-name)
-       (.initSign private-key))))
+  (with-open [keystore-stream (io/input-stream keystore-path)]
+    (let [algorithm-name "SHA1WithRSA"
+	  keystore (doto (KeyStore/getInstance (KeyStore/getDefaultType))
+		     (.load keystore-stream (.toCharArray keystore-password)))
+	  private-key (.. keystore (getKey key-alias (.toCharArray key-password)))]
+      #(doto (Signature/getInstance algorithm-name)
+	 (.initSign private-key)))))
 
 (defn initialise-signature-generator [keystore-path keystore-password key-alias key-password]
   "Initialises the global signature generation factory so the rsa

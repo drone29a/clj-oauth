@@ -217,6 +217,14 @@
                                                          "hdhd0244k9j7ao03")))))
 
 (deftest
+    #^{:doc "test keystore code"}
+  keystore
+  (let [factory (digest/get-signature-generator-factory "test-resources/fake-keys/keystore.ImportKey" "importkey" "importkey" "importkey")]
+    (is (instance? java.security.Signature (factory)))
+    (is (= "uhMAmyHaoX9XLi7c7HeFVBfBC8D2e5YMsE3283s7Qf1lmmh7rS4yr8i6uwDg/6VKpIJo2LOGrrgW1B1kbhZLHYCA9E/WTKRQYaJQveHGkiM4WQhxJFQkKDbgUdPsBF+WWXDfIEiK7vInMXCHWR0mqmEncHEg61NfgeUGbqPMBEVoQg63nEY9tB1DnPGtYnB9xj7+84Uz/gMfyvpac/oiFR/y2v4biKoE+4OXvEC/5AfVTLn/JBaVUgYy2cZ9psh48e+uHdo0wleUWA2LGHaKOx4S2KkXlqqWKaQbzFbZcBYQ8/0hGnG4UL9pAOwIr/6uLvto5s8EvrQE1lSoVkJCxw==" (digest/rsa "test" "test" factory)))
+    (is (= (digest/rsa "test" "test" factory) (digest/rsa "test" "test" factory)))))
+
+(deftest
     #^{:doc "test rsa-sha1 signatures"}
   rsa-sha1-signature
   (let [c {:key "dpf43f3p2l4k3l03"
