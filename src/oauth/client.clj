@@ -4,7 +4,6 @@
   oauth.client
   (:require [oauth.digest :as digest]
             [oauth.signature :as sig]
-            [com.twinql.clojure.http :as http]
             [clj-http.client :as httpclient]
             [clj-http.util :as httputil]
             )
@@ -28,8 +27,8 @@
   "Builds the URI to the Service Provider where the User will be prompted
 to approve the Consumer's access to their account."
   [consumer token]
-  (.toString (http/resolve-uri (:authorize-uri consumer)
-                               {:oauth_token token})))
+  (str (:authorize-uri consumer)
+       "?" (httpclient/generate-query-string {:oauth_token token})))
 
 (defn authorization-header
   "OAuth credentials formatted for the Authorization HTTP header."
@@ -55,7 +54,7 @@ to approve the Consumer's access to their account."
                    [(keyword (sig/url-decode k)) (sig/url-decode v)]))
                (split s #"&")))))
 
-(defn- check-success-response2 [m]
+(defn- check-success-response [m]
   (let [code (:status m)]
     (if (or (< code 200)
             (>= code 300))
@@ -69,7 +68,7 @@ to approve the Consumer's access to their account."
                 :parameters (http/map->params {:use-expect-continue false})
                 :as :urldecoded))
   (form-decode
-   (:body (check-success-response2
+   (:body (check-success-response
            (httpclient/post url req)))))
 
 (defn oauth-post-request-decoded [url oauth-params & [form-params]]
