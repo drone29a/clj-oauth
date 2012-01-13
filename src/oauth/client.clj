@@ -40,7 +40,7 @@ to approve the Consumer's access to their account."
                             "=\"" (-> v sig/as-str sig/url-encode) "\""))
                      oauth-params))))
   ([oauth-params realm]
-     (authorization-header (assoc oauth-params realm))))
+     (authorization-header (assoc oauth-params :realm realm))))
 
 (defn form-decode
   "Parse form-encoded bodies from OAuth responses."
