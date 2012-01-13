@@ -71,7 +71,7 @@ to approve the Consumer's access to their account."
    (:body (check-success-response
            (httpclient/post url req)))))
 
-(defn oauth-post-request-decoded [url oauth-params & [form-params]]
+(defn- oauth-post-request-decoded [url oauth-params & [form-params]]
   (let [req (merge
              {:headers {"Authorization" (authorization-header
                                          oauth-params)}}
