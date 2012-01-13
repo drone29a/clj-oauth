@@ -1,4 +1,5 @@
 (ns oauth.client-twitter-test
+  (:refer-clojure :exclude [key])
   (:require [oauth.client :as oc])
   (:use clojure.test)
   (:load "twitter_keys"))
