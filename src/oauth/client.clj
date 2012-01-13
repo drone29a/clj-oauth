@@ -4,9 +4,7 @@
   oauth.client
   (:require [oauth.digest :as digest]
             [oauth.signature :as sig]
-            [clj-http.client :as httpclient]
-            [clj-http.util :as httputil]
-            )
+            [clj-http.client :as httpclient])
   (:use [clojure.string :only [join split upper-case]]))
 
 (defrecord #^{:doc "OAuth consumer"}
