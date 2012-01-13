@@ -1,4 +1,4 @@
-(defproject clj-oauth "1.2.10-SNAPSHOT"
+(defproject clj-oauth "1.2.11-SNAPSHOT"
   :description "OAuth support for Clojure"
   :dependencies [[org.clojure/clojure "1.3.0"]
                  [com.twinql.clojure/clj-apache-http "2.3.1"]
