@@ -62,7 +62,7 @@ to approve the Consumer's access to their account."
       (throw (new Exception (str "Got non-success code: " code ". "
                                  "Content: " (:body m))))
       m)))
-(defn- post-request-body-decoded [url & [req]]
+(defn post-request-body-decoded [url & [req]]
   #_(success-content
      (http/post (:request-uri consumer)
                 :headers {"Authorization" (authorization-header params)}
@@ -150,17 +150,3 @@ Authorization HTTP header or added as query parameters to the request."
                  :oauth_signature signature)]
     (oauth-post-request-decoded (:access-uri consumer)
                                 params post-params)))
-
-;;; for backwards compat with external code
-(defn check-success-response [m]
-  (let [code (:code m)
-        reason (:reason m)]
-    (if (or (< code 200)
-            (>= code 300))
-      (throw (new Exception (str "Got non-success code: " code ". "
-                                 "Reason: " reason ", "
-                                 "Content: " (:content m))))
-      m)))
-
-(defn success-content [m]
-  (:content (check-success-response m)))
