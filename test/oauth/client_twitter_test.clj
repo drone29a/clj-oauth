@@ -14,3 +14,9 @@
             Considered to pass if no exception is thrown."}
   request-token
   (oc/request-token consumer))
+
+#_(deftest
+    #^{:doc "Considered to pass if no exception is thrown."}
+  access-token
+  (let [request-token (oc/request-token consumer)]
+    (oc/access-token consumer request-token ...verifier...)))
