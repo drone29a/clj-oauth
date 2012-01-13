@@ -16,6 +16,11 @@
   request-token
   (oc/request-token consumer))
 
+(deftest
+    #^{:doc "Considered to pass if no exception is thrown."}
+  user-approval-uri
+  (is (instance? String (oc/user-approval-uri consumer (oc/request-token consumer)))))
+
 #_(deftest
     #^{:doc "Considered to pass if no exception is thrown."}
   access-token
