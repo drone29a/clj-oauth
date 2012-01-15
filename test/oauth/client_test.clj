@@ -3,7 +3,7 @@
             [oauth.signature :as sig]
             :reload-all)
   (:use clojure.test
-        [clojure.contrib.pprint :only [pprint]]))
+        [clojure.pprint :only [pprint]]))
 
 (deftest ^{:doc "Test creation of authorization header for request_token access."}
   request-access-authorization-header

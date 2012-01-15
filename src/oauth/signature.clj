@@ -1,9 +1,9 @@
-(ns 
+(ns
     #^{:author "Matt Revelle"
-       :doc "OAuth client library for Clojure."} 
+       :doc "OAuth client library for Clojure."}
   oauth.signature
   (:require [oauth.digest :as digest])
-  (:use [clojure.contrib.string :only [join as-str]]))
+  (:use [clojure.string :only [join]]))
 
 (declare rand-str
          base-string
@@ -11,9 +11,17 @@
          url-encode
          oauth-params)
 
+(defn- named? [a]
+  (instance? clojure.lang.Named a))
+
+(defn as-str [a]
+  (if (named? a)
+    (name a)
+    (str a)))
+
 (def secure-random (java.security.SecureRandom/getInstance "SHA1PRNG"))
 
-(defn rand-str 
+(defn rand-str
   "Random string for OAuth requests."
   [length]
   (. (new BigInteger (int (* 5 length)) ^java.util.Random secure-random) toString 32))
@@ -24,21 +32,23 @@
 
 (defn url-form-encode [params]
   (join "&" (map (fn [[k v]]
-                      (str (url-encode (as-str k)) "=" (url-encode (as-str v)))) params )))
+                   (str (url-encode (as-str k))
+                        "=" (url-encode (as-str v)))) params )))
 (defn base-string
   ([method base-url c t params]
-     (base-string method base-url (assoc params
-                                    :oauth_consumer_key (:key c)
-                                    :oauth_token (:token t)
-                                    :oauth_signature_method (or (params :oauth_signature_method) 
-                                                                (signature-methods (:signature-method c)))
-                                    :oauth_version "1.0")))
+     (base-string method base-url
+                  (assoc params
+                    :oauth_consumer_key (:key c)
+                    :oauth_token (:token t)
+                    :oauth_signature_method (or (params :oauth_signature_method)
+                                                (signature-methods (:signature-method c)))
+                    :oauth_version "1.0")))
   ([method base-url params]
      (join "&" [method
-                (url-encode base-url) 
+                (url-encode base-url)
                 (url-encode (url-form-encode (sort params)))])))
 
-(defmulti sign 
+(defmulti sign
   "Sign a base string for authentication."
   {:arglists '([consumer base-string & [token-secret]])}
   (fn [c & r] (:signature-method c)))
@@ -80,9 +90,8 @@ requires RFC 3986 encoding."
       :oauth_nonce (rand-str 30)
       :oauth_version "1.0"})
   ([consumer token]
-     (assoc (oauth-params consumer) 
+     (assoc (oauth-params consumer)
        :oauth_token token))
   ([consumer token verifier]
      (assoc (oauth-params consumer token)
        :oauth_verifier (str verifier))))
-

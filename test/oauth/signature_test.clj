@@ -12,6 +12,12 @@
       :oauth_version "1.0"})
 
 (deftest
+  as-str-function
+  (is (= (sig/as-str :hello) "hello"))
+  (is (= (sig/as-str 3412) "3412"))
+  (is (= (sig/as-str 'hello) "hello")))
+
+(deftest
     signature-methods
   (is (= (sig/signature-methods :hmac-sha1) "HMAC-SHA1")))
 
@@ -242,11 +248,11 @@
   url-form-encode
   (is (= (sig/url-form-encode {}) ""))
   (is (= (sig/url-form-encode {"hello" "there"}) "hello=there"))
-  (is (= (sig/url-form-encode {"hello" "there" "name" "Bill" }) "hello=there&name=Bill"))
+  (is (= (sig/url-form-encode (sort {"hello" "there" "name" "Bill" })) "hello=there&name=Bill"))
   
   (is (= (sig/url-form-encode {:hello "there"}) "hello=there"))
-  (is (= (sig/url-form-encode {:hello "there" :name "Bill" }) "hello=there&name=Bill"))
+  (is (= (sig/url-form-encode (sort {:hello "there" :name "Bill" })) "hello=there&name=Bill"))
 
   (is (= (sig/url-form-encode {:hello "there"}) "hello=there"))
-  (is (= (sig/url-form-encode {:hello "there" :name "Bill Smith" }) "hello=there&name=Bill%20Smith")))
+  (is (= (sig/url-form-encode (sort {:hello "there" :name "Bill Smith" })) "hello=there&name=Bill%20Smith")))
 
