@@ -80,7 +80,8 @@
 
 (defmethod sign :rsa-sha1
   [c base-string & [token-secret ]]
-  (digest/rsa (make-sig-key c token-secret) base-string))
+  (let [sig (digest/rsa (make-sig-key c token-secret) base-string)]
+    (prn " >> SIGNATURE >> " sig)))
 
 (defn verify [sig c base-string & [token-secret]]
   (let [token-secret (url-encode (or token-secret ""))]

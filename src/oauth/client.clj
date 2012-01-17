@@ -5,10 +5,49 @@
   (:require [oauth.digest :as digest]
             [oauth.signature :as sig]
             [com.twinql.clojure.http :as http]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+	    [clojure.java.io :as io])
+  (:import [org.apache.http.conn.scheme PlainSocketFactory SchemeRegistry Scheme]
+	   [org.apache.http.conn.ssl SSLSocketFactory TrustSelfSignedStrategy AllowAllHostnameVerifier]
+	   [java.security KeyStore]
+	   [org.apache.http.impl.conn SingleClientConnManager]))
 
 (declare success-content
          authorization-header)
+
+(def ^{:dynamic true :private true} *connection-manager* nil)
+
+(defn with-connection-manager* [cm func]
+  (binding [*connection-manager* cm]
+    (func)))
+
+(defmacro with-connection-manager [cm & body]
+  `(with-connection-manager* ~cm
+     (fn []
+       ~@body)))
+
+(defn create-connection-manager [keystore-path keystore-password]
+  (with-open [keystore-stream (io/input-stream keystore-path)]
+    (let [keystore (doto (KeyStore/getInstance (KeyStore/getDefaultType))
+		     (.load keystore-stream (.toCharArray keystore-password)))
+	  ssl-socket-factory (SSLSocketFactory. "TLS" 
+					     keystore
+					     keystore-password
+					     nil
+					     nil
+					     (AllowAllHostnameVerifier.))
+	  scheme-registry (http/scheme-registry false)]
+      (.register scheme-registry
+		 (Scheme. "https"
+			  ssl-socket-factory
+			  443))
+      (SingleClientConnManager. scheme-registry))))
+
+(defn- make-post-request [uri & rest]
+  (let [args (if *connection-manager*
+	       (concat rest [:connection-manager *connection-manager*])
+	       rest)]
+    (apply http/post uri args)))
 
 (defstruct #^{:doc "OAuth consumer"} consumer
            :key
@@ -64,10 +103,10 @@
            params (assoc unsigned-params
                     :oauth_signature signature)]
        (success-content
-        (http/post (:request-uri consumer)
-                   :headers {"Authorization" (authorization-header params)}
-                   :parameters (http/map->params {:use-expect-continue false})
-                   :as :urldecoded))))
+        (make-post-request (:request-uri consumer)
+			   :headers {"Authorization" (authorization-header params)}
+			   :parameters (http/map->params {:use-expect-continue false})
+			   :as :urldecoded))))
   ([consumer callback-uri]
      (let [unsigned-params (assoc (sig/oauth-params consumer)
                              :oauth_callback callback-uri)
@@ -78,10 +117,10 @@
            params (assoc unsigned-params
                     :oauth_signature signature)]
        (success-content
-        (http/post (:request-uri consumer)
-                   :headers {"Authorization" (authorization-header params)}
-                   :parameters (http/map->params {:use-expect-continue false})
-                   :as :urldecoded)))))
+        (make-post-request (:request-uri consumer)
+			   :headers {"Authorization" (authorization-header params)}
+			   :parameters (http/map->params {:use-expect-continue false})
+			   :as :urldecoded)))))
 
 (defn user-approval-uri
   "Builds the URI to the Service Provider where the User will be prompted
@@ -111,10 +150,10 @@ to approve the Consumer's access to their account."
            params (assoc unsigned-params
                     :oauth_signature signature)]
        (success-content
-        (http/post (:access-uri consumer)
-                   :headers {"Authorization" (authorization-header params)}
-                   :parameters (http/map->params {:use-expect-continue false})
-                   :as :urldecoded)))))
+        (make-post-request (:access-uri consumer)
+			   :headers {"Authorization" (authorization-header params)}
+			   :parameters (http/map->params {:use-expect-continue false})
+			   :as :urldecoded)))))
 
 (defn refresh-token
   "Exchange an expired access token for a new access token."
@@ -130,10 +169,10 @@ to approve the Consumer's access to their account."
         params (assoc unsigned-params
                  :oauth_signature signature)]
     (success-content
-     (http/post (:access-uri consumer)
-                :headers {"Authorization" (authorization-header params)}
-                :parameters (http/map->params {:use-expect-continue false})
-                :as :urldecoded))))
+     (make-post-request (:access-uri consumer)
+			:headers {"Authorization" (authorization-header params)}
+			:parameters (http/map->params {:use-expect-continue false})
+			:as :urldecoded))))
 
 (defn xauth-access-token
   "Request an access token with a username and password with xAuth."
@@ -150,11 +189,11 @@ to approve the Consumer's access to their account."
         params (assoc oauth-params
                  :oauth_signature signature)]
     (success-content
-     (http/post (:access-uri consumer)
-                :query post-params
-                :headers {"Authorization" (authorization-header params)}
-                :parameters (http/map->params {:use-expect-continue false})
-                :as :urldecoded))))
+     (make-post-request (:access-uri consumer)
+			:query post-params
+			:headers {"Authorization" (authorization-header params)}
+			:parameters (http/map->params {:use-expect-continue false})
+			:as :urldecoded))))
 
 (defn credentials
   "Return authorization credentials needed for access to protected resources.  
