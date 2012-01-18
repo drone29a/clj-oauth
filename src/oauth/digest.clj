@@ -31,9 +31,10 @@ in the signing process."
       #(doto (Signature/getInstance algorithm-name)
 	 (.initSign private-key)))))
 
-(defn initialise-signature-generator [keystore-path keystore-password key-alias key-password]
+(defn initialise-signature-generator
   "Initialises the global signature generation factory so the rsa
 function can be called with the same api as the hmac one."
+  [keystore-path keystore-password key-alias key-password]
   (def ^{:dynamic true :private true}
        *signature-generator-factory*
        (get-signature-generator-factory keystore-path keystore-password key-alias key-password)))
@@ -43,6 +44,6 @@ function can be called with the same api as the hmac one."
   ([^String key ^String data]
      (rsa key data *signature-generator-factory*))
   ([^String key ^String data ^clojure.lang.IFn signature-generator-factory]
-     (let [^Signature signature-generator (signature-generator-factory)]
+     (let [signature-generator (signature-generator-factory)]
        (.update signature-generator (.getBytes data))
        (encode (.sign signature-generator)))))

@@ -47,6 +47,7 @@
   (let [args (if *connection-manager*
 	       (concat rest [:connection-manager *connection-manager*])
 	       rest)]
+    (prn  " http request >>> " uri args)
     (apply http/post uri args)))
 
 (defstruct #^{:doc "OAuth consumer"} consumer
@@ -92,35 +93,25 @@
                (str/split body #"&"))
           nil)))
 
+(defn- request-token* [unsigned-params consumer]
+  (let [signature (->> unsigned-params
+		       (sig/base-string "POST" (:request-uri consumer))
+		       (sig/sign consumer))
+	params (assoc unsigned-params :oauth_signature signature)]
+    (success-content
+     (make-post-request (:request-uri consumer)
+			:headers {"Authorization" (authorization-header params)}
+			:parameters (http/map->params {:use-expect-continue false})
+			:as :urldecoded))))
+
 (defn request-token
   "Fetch request token for the consumer."
   ([consumer]
-     (let [unsigned-params (sig/oauth-params consumer)
-           signature (sig/sign consumer
-                               (sig/base-string "POST" 
-                                                (:request-uri consumer)
-                                                unsigned-params))
-           params (assoc unsigned-params
-                    :oauth_signature signature)]
-       (success-content
-        (make-post-request (:request-uri consumer)
-			   :headers {"Authorization" (authorization-header params)}
-			   :parameters (http/map->params {:use-expect-continue false})
-			   :as :urldecoded))))
+     (request-token* (sig/oauth-params consumer) consumer))
   ([consumer callback-uri]
-     (let [unsigned-params (assoc (sig/oauth-params consumer)
-                             :oauth_callback callback-uri)
-           signature (sig/sign consumer
-                               (sig/base-string "POST" 
-                                                (:request-uri consumer)
-                                                unsigned-params))
-           params (assoc unsigned-params
-                    :oauth_signature signature)]
-       (success-content
-        (make-post-request (:request-uri consumer)
-			   :headers {"Authorization" (authorization-header params)}
-			   :parameters (http/map->params {:use-expect-continue false})
-			   :as :urldecoded)))))
+     (-> (sig/oauth-params consumer)
+	 (assoc :oauth_callback callback-uri)
+	 (request-token* consumer))))
 
 (defn user-approval-uri
   "Builds the URI to the Service Provider where the User will be prompted

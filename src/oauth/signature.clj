@@ -16,6 +16,7 @@
 
 (def ^{:dynamic true} *dump-base-string* false)
 (def ^{:dynamic true} *normalize-should-downcase* true)
+(def ^{:dynamic true} *exclude-keys-from-basestring* nil)
 
 (defn rand-str 
   "Random string for OAuth requests."
@@ -56,7 +57,10 @@
                                                                 (signature-methods (:signature-method c)))
                                     :oauth_version "1.0")))
   ([method base-url params]
-     (let [base-str (str/join "&" [(.toUpperCase method)
+     (let [params (if (sequential? *exclude-keys-from-basestring*)
+		    (apply dissoc params *exclude-keys-from-basestring*)
+		    params)
+	   base-str (str/join "&" [(.toUpperCase method)
 				   (url-encode (normalize base-url))
 				   (url-encode (url-form-encode (sort params)))])]
        (when *dump-base-string* (prn (str "base-string:" base-str)))
@@ -79,9 +83,13 @@
   (make-sig-key c token-secret))
 
 (defmethod sign :rsa-sha1
-  [c base-string & [token-secret ]]
+  [c base-string & [token-secret]]
   (let [sig (digest/rsa (make-sig-key c token-secret) base-string)]
-    (prn " >> SIGNATURE >> " sig)))
+    (prn " >> base-string > " base-string)
+    (prn " >> consumer  >>> " c)
+    (prn " > token-secret > " token-secret)
+    (prn " >>> SIGNATURE >> " sig)
+    sig))
 
 (defn verify [sig c base-string & [token-secret]]
   (let [token-secret (url-encode (or token-secret ""))]
