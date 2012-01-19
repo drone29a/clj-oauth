@@ -6,48 +6,16 @@
             [oauth.signature :as sig]
             [com.twinql.clojure.http :as http]
             [clojure.string :as str]
-	    [clojure.java.io :as io])
-  (:import [org.apache.http.conn.scheme PlainSocketFactory SchemeRegistry Scheme]
-	   [org.apache.http.conn.ssl SSLSocketFactory TrustSelfSignedStrategy AllowAllHostnameVerifier]
-	   [java.security KeyStore]
-	   [org.apache.http.impl.conn SingleClientConnManager]))
+	    [clojure.java.io :as io]
+	    [oauth.keystore :as keystore]))
 
 (declare success-content
          authorization-header)
 
-(def ^{:dynamic true :private true} *connection-manager* nil)
-
-(defn with-connection-manager* [cm func]
-  (binding [*connection-manager* cm]
-    (func)))
-
-(defmacro with-connection-manager [cm & body]
-  `(with-connection-manager* ~cm
-     (fn []
-       ~@body)))
-
-(defn create-connection-manager [keystore-path keystore-password]
-  (with-open [keystore-stream (io/input-stream keystore-path)]
-    (let [keystore (doto (KeyStore/getInstance (KeyStore/getDefaultType))
-		     (.load keystore-stream (.toCharArray keystore-password)))
-	  ssl-socket-factory (SSLSocketFactory. "TLS" 
-					     keystore
-					     keystore-password
-					     nil
-					     nil
-					     (AllowAllHostnameVerifier.))
-	  scheme-registry (http/scheme-registry false)]
-      (.register scheme-registry
-		 (Scheme. "https"
-			  ssl-socket-factory
-			  443))
-      (SingleClientConnManager. scheme-registry))))
-
 (defn- make-post-request [uri & rest]
-  (let [args (if *connection-manager*
-	       (concat rest [:connection-manager *connection-manager*])
+  (let [args (if-let [connection-manager (keystore/connection-manager uri)]
+	       (concat rest [:connection-manager connection-manager])
 	       rest)]
-    (prn  " http request >>> " uri args)
     (apply http/post uri args)))
 
 (defstruct #^{:doc "OAuth consumer"} consumer

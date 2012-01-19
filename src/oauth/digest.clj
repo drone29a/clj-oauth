@@ -2,10 +2,11 @@
   (:import (javax.crypto Mac)
 	   (javax.crypto.spec SecretKeySpec)
 	   [java.security Signature KeyStore]
-	   [org.apache.commons.codec.binary Base64])
-  (:require [clojure.java.io :as io]))
-
-(def ^{:dynamic true :private true} *signature-generator-factory*)
+	   [org.apache.commons.codec.binary Base64]
+	   [java.net URLDecoder])
+  (:require [clojure.java.io :as io]
+	    [clojure.string :as str]
+	    [oauth.keystore :as keystore]))
 
 (defn- encode [data]
   (String. (Base64/encodeBase64 data) "UTF-8"))
@@ -18,32 +19,17 @@
         mac (doto (Mac/getInstance hmac-sha1) (.init signing-key))]
     (encode (.doFinal mac (.getBytes data)))))
 
-(defn get-signature-generator-factory
-  "Takes a description of a key in a keystore, and returns a function
-that can be passed to the rsa function as the source of the key used
-in the signing process."
-  [keystore-path keystore-password key-alias key-password]
-  (with-open [keystore-stream (io/input-stream keystore-path)]
-    (let [algorithm-name "SHA1WithRSA"
-	  keystore (doto (KeyStore/getInstance (KeyStore/getDefaultType))
-		     (.load keystore-stream (.toCharArray keystore-password)))
-	  private-key (.. keystore (getKey key-alias (.toCharArray key-password)))]
-      #(doto (Signature/getInstance algorithm-name)
-	 (.initSign private-key)))))
-
-(defn initialise-signature-generator
-  "Initialises the global signature generation factory so the rsa
-function can be called with the same api as the hmac one."
-  [keystore-path keystore-password key-alias key-password]
-  (def ^{:dynamic true :private true}
-       *signature-generator-factory*
-       (get-signature-generator-factory keystore-path keystore-password key-alias key-password)))
+(defn- extract-uri [data]
+  (-> data
+      (str/split #"&")
+      second
+      (URLDecoder/decode "UTF-8")))
 
 (defn rsa
   "Calculate RSA signature for given data."
-  ([^String key ^String data]
-     (rsa key data *signature-generator-factory*))
-  ([^String key ^String data ^clojure.lang.IFn signature-generator-factory]
-     (let [signature-generator (signature-generator-factory)]
-       (.update signature-generator (.getBytes data))
-       (encode (.sign signature-generator)))))
+  [^String key ^String data]
+  (if-let [signature-generator (keystore/signature-generator (extract-uri data))]
+    (do
+      (.update signature-generator (.getBytes data))
+      (encode (.sign signature-generator)))
+    (throw (IllegalStateException. "Cannot calculate rsa signature - no keystore registered. See oauth.keystore/register-rsa-signature-generator-key."))))
