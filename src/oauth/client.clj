@@ -12,11 +12,22 @@
 (declare success-content
          authorization-header)
 
-(defn- make-post-request [uri & rest]
-  (let [args (if-let [connection-manager (keystore/connection-manager uri)]
+(def ^{:private true} http-lookup {:DELETE  http/delete
+				   :GET     http/get
+				   :HEAD    http/head
+				   :OPTIONS http/options
+				   :POST    http/post
+				   :PUT     http/put})
+
+(defn- make-request* [method uri & rest]
+  (let [connection-manager (keystore/connection-manager uri)
+	_ (prn " >  " connection-manager)
+	args (if connection-manager
 	       (concat rest [:connection-manager connection-manager])
-	       rest)]
-    (apply http/post uri args)))
+	       rest)
+	_ (prn " >  " uri args)
+	response (apply method uri args)]
+    response))
 
 (defstruct #^{:doc "OAuth consumer"} consumer
            :key
@@ -29,13 +40,13 @@
 (defn check-success-response [m]
   (let [code (:code m)]
     (if (or (< code 200)
-              (>= code 300))
+	    (>= code 300))
       (throw (new Exception (str "Got non-success response " code ".")))
       m)))
 
 (defn success-content [m]
   (:content
-     (check-success-response m)))
+   (check-success-response m)))
 
 (defn make-consumer
   "Make a consumer struct map."
@@ -67,10 +78,10 @@
 		       (sig/sign consumer))
 	params (assoc unsigned-params :oauth_signature signature)]
     (success-content
-     (make-post-request (:request-uri consumer)
-			:headers {"Authorization" (authorization-header params)}
-			:parameters (http/map->params {:use-expect-continue false})
-			:as :urldecoded))))
+     (make-request* http/post (:request-uri consumer)
+		    :headers {"Authorization" (authorization-header params)}
+		    :parameters (http/map->params {:use-expect-continue false})
+		    :as :urldecoded))))
 
 (defn request-token
   "Fetch request token for the consumer."
@@ -109,10 +120,10 @@ to approve the Consumer's access to their account."
            params (assoc unsigned-params
                     :oauth_signature signature)]
        (success-content
-        (make-post-request (:access-uri consumer)
-			   :headers {"Authorization" (authorization-header params)}
-			   :parameters (http/map->params {:use-expect-continue false})
-			   :as :urldecoded)))))
+        (make-request* http/post (:access-uri consumer)
+		       :headers {"Authorization" (authorization-header params)}
+		       :parameters (http/map->params {:use-expect-continue false})
+		       :as :urldecoded)))))
 
 (defn refresh-token
   "Exchange an expired access token for a new access token."
@@ -128,10 +139,10 @@ to approve the Consumer's access to their account."
         params (assoc unsigned-params
                  :oauth_signature signature)]
     (success-content
-     (make-post-request (:access-uri consumer)
-			:headers {"Authorization" (authorization-header params)}
-			:parameters (http/map->params {:use-expect-continue false})
-			:as :urldecoded))))
+     (make-request* http/post (:access-uri consumer)
+		    :headers {"Authorization" (authorization-header params)}
+		    :parameters (http/map->params {:use-expect-continue false})
+		    :as :urldecoded))))
 
 (defn xauth-access-token
   "Request an access token with a username and password with xAuth."
@@ -148,11 +159,11 @@ to approve the Consumer's access to their account."
         params (assoc oauth-params
                  :oauth_signature signature)]
     (success-content
-     (make-post-request (:access-uri consumer)
-			:query post-params
-			:headers {"Authorization" (authorization-header params)}
-			:parameters (http/map->params {:use-expect-continue false})
-			:as :urldecoded))))
+     (make-request* http/post (:access-uri consumer)
+		    :query post-params
+		    :headers {"Authorization" (authorization-header params)}
+		    :parameters (http/map->params {:use-expect-continue false})
+		    :as :urldecoded))))
 
 (defn credentials
   "Return authorization credentials needed for access to protected resources.  
@@ -167,7 +178,7 @@ Authorization HTTP header or added as query parameters to the request."
                                                     name
                                                     str/upper-case)
                                                 request-uri
-                                                 unsigned-params)
+						unsigned-params)
                                token-secret)]
        (assoc unsigned-oauth-params :oauth_signature signature))))
 
@@ -175,8 +186,8 @@ Authorization HTTP header or added as query parameters to the request."
   "OAuth credentials formatted for the Authorization HTTP header."
   ([oauth-params]
      (str "OAuth " (str/join ", " (map (fn [[k v]] 
-                                     (str (-> k name sig/url-encode) "=\"" (-> v str sig/url-encode) "\""))
-                                   oauth-params))))
+					 (str (-> k name sig/url-encode) "=\"" (-> v str sig/url-encode) "\""))
+				       oauth-params))))
   ([oauth-params realm]
      (authorization-header (assoc oauth-params realm))))
 
@@ -192,3 +203,24 @@ Authorization HTTP header or added as query parameters to the request."
 
 (defn success-content [m]
   (:content (check-success-response m)))
+
+(defn make-request
+  "Actually make an oauth authenticated http request."
+  [{:keys [signature-method key secret] :as consumer}
+   {:keys [oauth_token oauth_token_secret oauth_session_handle] :as access-token}
+   request-method
+   ^String url
+   {:as params}
+   &
+   [{:as headers}]]
+  (prn " > " url params consumer oauth_token oauth_token_secret request-method)
+  (let [credentials (credentials consumer oauth_token oauth_token_secret request-method url params)
+	oauth-header (authorization-header credentials)]
+    (prn " >>> " oauth-header)
+    (if-let [method (http-lookup request-method)]
+      (make-request* method
+		     url
+		     :headers (assoc headers "Authorization" oauth-header)
+		     :query (reduce (fn [m [k v]] (assoc m (if (keyword? k) (name k) k) v)) {} params)
+		     :as :string)
+      (throw (IllegalArgumentException. (str "Unknown request method : " request-method " - should be one of " (keys http-lookup)))))))

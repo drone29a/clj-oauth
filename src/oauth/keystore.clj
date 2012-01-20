@@ -3,7 +3,8 @@
 	   [org.apache.commons.codec.binary Base64]
 	   [org.apache.http.conn.ssl SSLSocketFactory TrustSelfSignedStrategy AllowAllHostnameVerifier]
 	   [org.apache.http.conn.scheme Scheme]
-	   [org.apache.http.impl.conn SingleClientConnManager]
+	   ;; [org.apache.http.impl.conn SingleClientConnManager]
+	   [org.apache.http.impl.conn.tsccm ThreadSafeClientConnManager]
 	   [java.net URI])
   (:require [clojure.java.io :as io]
 	    [com.twinql.clojure.http :as http]))
@@ -27,11 +28,8 @@
 					     nil
 					     (AllowAllHostnameVerifier.))
 	  scheme-registry (http/scheme-registry false)]
-      (.register scheme-registry
-		 (Scheme. "https"
-			  ssl-socket-factory
-			  443))
-      (SingleClientConnManager. scheme-registry))))
+      (.register scheme-registry (Scheme. "https" ssl-socket-factory 443))
+      (ThreadSafeClientConnManager. scheme-registry))))
 
 (defn register-connection-manager
   "register a connection mananger for the host in the URI."
