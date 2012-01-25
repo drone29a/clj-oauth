@@ -21,11 +21,9 @@
 
 (defn- make-request* [method uri & rest]
   (let [connection-manager (keystore/connection-manager uri)
-	_ (prn " >  " connection-manager)
 	args (if connection-manager
 	       (concat rest [:connection-manager connection-manager])
 	       rest)
-	_ (prn " >  " uri args)
 	response (apply method uri args)]
     response))
 
@@ -213,10 +211,8 @@ Authorization HTTP header or added as query parameters to the request."
    {:as params}
    &
    [{:as headers}]]
-  (prn " > " url params consumer oauth_token oauth_token_secret request-method)
   (let [credentials (credentials consumer oauth_token oauth_token_secret request-method url params)
 	oauth-header (authorization-header credentials)]
-    (prn " >>> " oauth-header)
     (if-let [method (http-lookup request-method)]
       (make-request* method
 		     url
