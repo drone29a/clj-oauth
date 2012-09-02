@@ -1,5 +1,6 @@
-(defproject clj-oauth "1.3.1-SNAPSHOT"
+(defproject clj-oauth "1.4.0-SNAPSHOT"
   :description "OAuth support for Clojure"
   :repositories {"snapshots" {:url "s3p://lein-snapshots/snapshots"}}
-  :dependencies [[org.clojure/clojure "1.3.0"]
-                 [clj-http "0.2.7"]])
+  :dependencies [[org.clojure/clojure "1.4.0"]
+                 [clj-http "0.5.3"]]
+  :min-lein-version "2.0.0")
