@@ -26,6 +26,10 @@
   [length]
   (. (new BigInteger (int (* 5 length)) ^java.util.Random secure-random) toString 32))
 
+(defn msecs->secs
+  "Convert milliseconds to seconds."
+  [millis]
+  (int (/ millis 1000)))
 
 (def signature-methods {:hmac-sha1 "HMAC-SHA1"
                         :plaintext "PLAINTEXT"})
@@ -83,15 +87,15 @@ requires RFC 3986 encoding."
 
 (defn oauth-params
   "Build a map of parameters needed for OAuth requests."
-  ([consumer]
+  ([consumer nonce timestamp]
      {:oauth_consumer_key (:key consumer)
       :oauth_signature_method (signature-methods (:signature-method consumer))
-      :oauth_timestamp (int (/ (System/currentTimeMillis) 1000))
-      :oauth_nonce (rand-str 30)
+      :oauth_timestamp timestamp
+      :oauth_nonce nonce
       :oauth_version "1.0"})
-  ([consumer token]
-     (assoc (oauth-params consumer)
+  ([consumer nonce timestamp token]
+     (assoc (oauth-params consumer nonce timestamp)
        :oauth_token token))
-  ([consumer token verifier]
-     (assoc (oauth-params consumer token)
+  ([consumer nonce timestamp token verifier]
+     (assoc (oauth-params consumer nonce timestamp token)
        :oauth_verifier (str verifier))))

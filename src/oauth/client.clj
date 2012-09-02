@@ -59,6 +59,14 @@ to approve the Consumer's access to their account."
       (throw (new Exception (str "Got non-success code: " code ". "
                                  "Content: " (:body m))))
       m)))
+
+(defn build-request [oauth-params & [form-params]]
+  (let [req (merge
+             {:headers {"Authorization" (authorization-header
+                                         oauth-params)}}
+             (if form-params {:form-params form-params}))]
+    req))
+
 (defn post-request-body-decoded [url & [req]]
   #_(success-content
      (http/post (:request-uri consumer)
@@ -69,19 +77,15 @@ to approve the Consumer's access to their account."
    (:body (check-success-response
            (httpclient/post url req)))))
 
-(defn- oauth-post-request-decoded [url oauth-params & [form-params]]
-  (let [req (merge
-             {:headers {"Authorization" (authorization-header
-                                         oauth-params)}}
-             (if form-params {:form-params form-params}))]
-    (post-request-body-decoded url req)))
-
 (defn credentials
   "Return authorization credentials needed for access to protected resources.
 The key-value pairs returned as a map will need to be added to the
 Authorization HTTP header or added as query parameters to the request."
   ([consumer token token-secret request-method request-uri & [request-params]]
-     (let [unsigned-oauth-params (sig/oauth-params consumer token)
+     (let [unsigned-oauth-params (sig/oauth-params consumer
+                                                   (sig/rand-str 30)
+                                                   (sig/msecs->secs (System/currentTimeMillis))
+                                                   token)
            unsigned-params (merge request-params
                                   unsigned-oauth-params)
            signature (sig/sign consumer
@@ -99,7 +103,7 @@ Authorization HTTP header or added as query parameters to the request."
                                (sig/base-string "POST" uri unsigned-params)
                                token-secret)
            params (assoc unsigned-params :oauth_signature signature)]
-       (oauth-post-request-decoded uri params))))
+       (post-request-body-decoded uri (build-request params)))))
 
 (defn request-token
   "Fetch request token for the consumer."
@@ -107,7 +111,9 @@ Authorization HTTP header or added as query parameters to the request."
      (request-token consumer nil))
 
   ([consumer callback-uri]
-     (let [unsigned-params (sig/oauth-params consumer)
+     (let [unsigned-params (sig/oauth-params consumer
+                                             (sig/rand-str 30)
+                                             (sig/msecs->secs (System/currentTimeMillis)))
            unsigned-params (if callback-uri
                              (assoc unsigned-params
                                :oauth_callback callback-uri)
@@ -123,18 +129,21 @@ Authorization HTTP header or added as query parameters to the request."
   ([consumer request-token verifier]
      (let [unsigned-params (if verifier
                              (sig/oauth-params consumer
+                                               (sig/rand-str 30)
+                                               (sig/msecs->secs (System/currentTimeMillis))
                                                (:oauth_token request-token)
                                                verifier)
                              (sig/oauth-params consumer
+                                               (sig/rand-str 30)
+                                               (sig/msecs->secs (System/currentTimeMillis))
                                                (:oauth_token
                                                 request-token)))
            token-secret (:oauth_token_secret request-token)]
        (get-oauth-token consumer (:access-uri consumer) unsigned-params token-secret))))
 
-(defn xauth-access-token
-  "Request an access token with a username and password with xAuth."
-  [consumer username password]
-  (let [oauth-params (sig/oauth-params consumer)
+(defn build-xauth-access-token-request
+  [consumer username password nonce timestamp]
+  (let [oauth-params (sig/oauth-params consumer nonce timestamp)
         post-params {:x_auth_username username
                      :x_auth_password password
                      :x_auth_mode "client_auth"}
@@ -145,5 +154,14 @@ Authorization HTTP header or added as query parameters to the request."
                                                     post-params)))
         params (assoc oauth-params
                  :oauth_signature signature)]
-    (oauth-post-request-decoded (:access-uri consumer)
-                                params post-params)))
+    (build-request params post-params)))
+
+(defn xauth-access-token
+  "Request an access token with a username and password with xAuth."
+  [consumer username password]
+  (post-request-body-decoded (:access-uri consumer)
+                             (build-xauth-access-token-request consumer
+                                                               username
+                                                               password
+                                                               (sig/rand-str 30)
+                                                               (sig/msecs->secs (System/currentTimeMillis)))))
