@@ -59,11 +59,9 @@ The server support makes it simple to add OAuth support to any [Ring](http://git
                                         "http://twitter.com/statuses/update.json"
                                         {:status "posting from #clojure with #oauth")))
 
-    ;; Post with clj-apache-http...
+    ;; Post with clj-http...
     (http/post "http://twitter.com/statuses/update.json" 
-               :query (merge credentials 
-                             {:status "posting from #clojure with #oauth"})
-               :parameters (http/map->params {:use-expect-continue false})))
+               :query-params credentials)
                                          
     ;; ...or with clojure-twitter (http://github.com/mattrepl/clojure-twitter)
     (require 'twitter)
