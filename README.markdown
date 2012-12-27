@@ -12,7 +12,7 @@ The server support makes it simple to add OAuth support to any [Ring](http://git
 `lein jar`
 
 # Client Example #
-
+``` clojure
     (require ['oauth.client :as 'oauth])
     
     ;; Create a Consumer, in this case one to access Twitter.
@@ -70,10 +70,7 @@ The server support makes it simple to add OAuth support to any [Ring](http://git
                         (:oauth_token access-token-response)            
                         (:oauth_token_secret access-token-response)
                         (twitter/update-status "using clj-oauth with clojure-twitter"))
-
-# Server Support #
-
-The server support is implemented as Ring middleware. It depends on params middleware already having been run upstream.  The server implementation is incomplete but available in the `server` branch.
+```
 
 # Authors #
 
