@@ -1,11 +1,6 @@
 # OAuth support for Clojure #
 
-`clj-oauth` provides [OAuth](http://oauth.net) Client and Server support for Clojure programs.
-
-The client part of the library depends on Richard Newman's [clj-apache-http](http://github.com/rnewman/clj-apache-http) which includes Apache's
-HTTP components.
-
-The server support makes it simple to add OAuth support to any [Ring](http://github.com/mmcgrana/ring) based web applications such as Compojure.
+`clj-oauth` provides [OAuth](http://oauth.net) Client support for Clojure programs.
 
 # Building #
 
