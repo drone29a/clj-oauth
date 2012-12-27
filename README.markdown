@@ -82,5 +82,3 @@ Development funded by LikeStream LLC (Don Jackson and Shirish Andhare), see [htt
 Designed and developed by Matt Revelle.
 
 Contributions from Richard Newman.
-
-Server implementation by Pelle Braendgaard of [Stake Ventures](http://stakeventures.com)
