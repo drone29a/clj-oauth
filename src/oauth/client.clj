@@ -218,5 +218,6 @@ Authorization HTTP header or added as query parameters to the request."
 		     url
 		     :headers (assoc headers "Authorization" oauth-header)
 		     :query (reduce (fn [m [k v]] (assoc m (if (keyword? k) (name k) k) v)) {} params)
+		     :parameter-encoding "UTF-8"
 		     :as :string)
       (throw (IllegalArgumentException. (str "Unknown request method : " request-method " - should be one of " (keys http-lookup)))))))
