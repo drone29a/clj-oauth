@@ -31,15 +31,6 @@
       (.register scheme-registry (Scheme. "https" ssl-socket-factory 443))
       (ThreadSafeClientConnManager. scheme-registry))))
 
-(defn create-ssl-connection-manager
-  "Create an connection manager for PKCS oauth connections."
-  []
-  (let [ssl-socket-factory (SSLSocketFactory. (TrustSelfSignedStrategy.)
-					      (AllowAllHostnameVerifier.))
-	scheme-registry (http/scheme-registry false)]
-    (.register scheme-registry (Scheme. "https" ssl-socket-factory 443))
-    (ThreadSafeClientConnManager. scheme-registry)))
-
 (defn register-connection-manager
   "register a connection mananger for the host in the URI."
   [uri connection-manager]
