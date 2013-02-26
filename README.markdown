@@ -62,11 +62,11 @@ Create a file test/oauth/twitter_keys.clj that contains the consumer key and sec
                                         (:oauth_token access-token-response)
                                         (:oauth_token_secret access-token-response)
                                         :POST
-                                        "http://api.twitter.com/statuses/update.json"
+                                        "http://api.twitter.com/1.1/statuses/update.json"
                                         {:status "posting from #clojure with #oauth")))
 
     ;; Post with clj-http...
-    (http/post "http://api.twitter.com/statuses/update.json" 
+    (http/post "http://api.twitter.com/1.1/statuses/update.json" 
                :query-params credentials)
                                          
     ;; ...or with clojure-twitter (http://github.com/mattrepl/clojure-twitter)
