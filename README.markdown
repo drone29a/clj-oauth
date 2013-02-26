@@ -26,9 +26,9 @@ Create a file test/oauth/twitter_keys.clj that contains the consumer key and sec
     ;; to obtain a Consumer token and token secret.
     (def consumer (oauth/make-consumer <consumer-token>
                                        <consumer-token-secret>
-                                       "http://twitter.com/oauth/request_token"
-                                       "http://twitter.com/oauth/access_token"
-                                       "http://twitter.com/oauth/authorize"
+                                       "http://api.twitter.com/oauth/request_token"
+                                       "http://api.twitter.com/oauth/access_token"
+                                       "http://api.twitter.com/oauth/authorize"
                                        :hmac-sha1))
 
     ;; Fetch a request token that a OAuth User may authorize
@@ -62,11 +62,11 @@ Create a file test/oauth/twitter_keys.clj that contains the consumer key and sec
                                         (:oauth_token access-token-response)
                                         (:oauth_token_secret access-token-response)
                                         :POST
-                                        "http://twitter.com/statuses/update.json"
+                                        "http://api.twitter.com/1.1/statuses/update.json"
                                         {:status "posting from #clojure with #oauth")))
 
     ;; Post with clj-http...
-    (http/post "http://twitter.com/statuses/update.json" 
+    (http/post "http://api.twitter.com/1.1/statuses/update.json"
                :query-params credentials)
                                          
     ;; ...or with clojure-twitter (http://github.com/mattrepl/clojure-twitter)
