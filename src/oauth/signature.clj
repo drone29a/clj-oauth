@@ -2,6 +2,7 @@
     #^{:author "Matt Revelle"
        :doc "OAuth client library for Clojure."}
   oauth.signature
+  (:import org.apache.commons.codec.binary.Base64)
   (:require [oauth.digest :as digest])
   (:use [clojure.string :only [join]]))
 
@@ -32,6 +33,7 @@
   (int (/ millis 1000)))
 
 (def signature-methods {:hmac-sha1 "HMAC-SHA1"
+                        :rsa-sha1 "RSA-SHA1"
                         :plaintext "PLAINTEXT"})
 
 (defn url-form-encode [params]
@@ -65,6 +67,21 @@
 (defmethod sign :plaintext
   [c base-string & [token-secret]]
   (str (url-encode (:secret c)) "&" (url-encode (or token-secret ""))))
+
+(defmethod sign :rsa-sha1
+  [c ^String base-string & [token-secret]]
+  (java.security.Security/addProvider
+    (org.bouncycastle.jce.provider.BouncyCastleProvider.))
+  (let [private-key (-> (:secret c)
+                        java.io.StringReader.
+                        org.bouncycastle.openssl.PEMReader.
+                        .readObject
+                        .getPrivate)
+        signer (doto (java.security.Signature/getInstance "SHA1withRSA" "BC")
+                 (.initSign private-key (java.security.SecureRandom.))
+                 (.update (.getBytes base-string)))
+        raw-sig (.sign signer)]
+    (String. (Base64/encodeBase64 raw-sig))))
 
 (defn verify [sig c base-string & [token-secret]]
   (let [token-secret (url-encode (or token-secret ""))]

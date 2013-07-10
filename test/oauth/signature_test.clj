@@ -152,6 +152,47 @@
                    "J6zix3FfA9LofH0awS24M3HcBYXO5nI1iYe8EfBA")
          "yOahq5m0YjDDjfjxHaXEsW9D+X0=")))
 
+(deftest rsa-sha1-signature
+  (let [c {:secret
+           "-----BEGIN RSA PRIVATE KEY-----
+           MIIBOwIBAAJBAPwrtgkaYAbp/xzfBzcsZR/ADW1ZVsRG6JOou8AcFM/gvuPOxXVk
+           5zhs+rTk19UO53XO9cHOFd4HwndY/Y7tcOMCAwEAAQJBAKqRQnML1RI4Kqgzr2TB
+           cbE1LZ/eQxNGR0DBbCV4mRc1vRAZ6Y/lbVEm7snA6CYsTALr5ajoCQgL3DReCMhj
+           rbkCIQD+sDIWPIx+zCLJ+1mFk9dt48EFFQNHjfPhMXdeIohetwIhAP14MjN/4jlj
+           V8d9H0WILt/1xCHcneNojYACVGxRZ9M1AiARwoObnVlGtkFuyEIz2F1bYlhhXFfA
+           M5vgBi0GuW28/QIgGU83NA1A+ZoB2dmUlczTYWmY/Aibe2mlN3MEGwzF4UECIQCa
+           YRd7U3DJo60QR8zRepaqOILLwtkpxoauNOYx35vF/Q==
+           -----END RSA PRIVATE KEY-----"
+           :key
+           "-----BEGIN PUBLIC KEY-----
+           MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAPwrtgkaYAbp/xzfBzcsZR/ADW1ZVsRG
+           6JOou8AcFM/gvuPOxXVk5zhs+rTk19UO53XO9cHOFd4HwndY/Y7tcOMCAwEAAQ==
+           -----END PUBLIC KEY-----"
+           :signature-method :rsa-sha1}]
+    (is (= (str "bLsgZgdgVNNmL0Gc7yjrG6L8YRpYOu1nB1cSKZVIcpjWjWK6GYLo7p9m0/"
+                "KTWtS0+1PfdVCSG6CY9Vc1pI59Sg==")
+           (sig/sign c
+                     (sig/base-string "POST"
+                                      "https://photos.example.net/request_token"
+                                      {:oauth_consumer_key "dpf43f3p2l4k3l03"
+                                       :oauth_signature_method "RSA-SHA1"
+                                       :oauth_timestamp "1191242090"
+                                       :oauth_nonce "hsu94j3884jdopsl"
+                                       :oauth_version "1.0"}))))
+    (is (= (str "AHW5D+8gO+1qPuoM3+DT6AzGyyXoDl1bJ1ce1c9DWk0EXYvelzycBCmeRi"
+                "rZGiC3RsFBZw8BwFISZCGim9nddw==")
+           (sig/sign c
+                     (sig/base-string "POST"
+                                      "https://photos.example.net/access_token"
+                                      {:oauth_consumer_key "dpf43f3p2l4k3l03"
+                                       :oauth_signature_method "RSA-SHA1"
+                                       :oauth_timestamp "1191242090"
+                                       :oauth_token "hh5s93j4hdidpola"
+                                       :oauth_nonce "hsu94j3884jdopsl"
+                                       :oauth_verifier "hfdp7dh39dks9884"
+                                       :oauth_version "1.0"})
+                     "hdhd0244k9j7ao03")))))
+
 (deftest
     #^{:doc "test plaintext signatures"}
   plaintext-signature
