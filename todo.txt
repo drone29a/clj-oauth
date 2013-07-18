@@ -3,5 +3,4 @@
 - Authorize WS
 - Revoke WS
 - Nonce checking
-- RSA-SHA1
 - HMAC-SHA256
