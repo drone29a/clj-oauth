@@ -68,11 +68,6 @@ to approve the Consumer's access to their account."
     req))
 
 (defn post-request-body-decoded [url & [req]]
-  #_(success-content
-     (http/post (:request-uri consumer)
-                :headers {"Authorization" (authorization-header params)}
-                :parameters (http/map->params {:use-expect-continue false})
-                :as :urldecoded))
   (form-decode
    (:body (check-success-response
            (httpclient/post url req)))))
@@ -155,6 +150,22 @@ Authorization HTTP header or added as query parameters to the request."
         params (assoc oauth-params
                  :oauth_signature signature)]
     (build-request params post-params)))
+
+(defn refresh-token
+  "Exchange an expired access token for a new access token."
+  [consumer expired-token]
+  (let [unsigned-params (assoc (sig/oauth-params consumer
+                                                 (:oauth_token expired-token))
+                          :oauth_session_handle (:oauth_session_handle expired-token))
+        signature (sig/sign consumer
+                            (sig/base-string "POST"
+                                             (:access-uri consumer)
+                                             unsigned-params)
+                            (:oauth_token_secret expired-token))
+        params (assoc unsigned-params
+                 :oauth_signature signature)]
+    (post-request-body-decoded (:access-uri consumer)
+                               (build-request params {:use-expect-continue false}))))
 
 (defn xauth-access-token
   "Request an access token with a username and password with xAuth."
