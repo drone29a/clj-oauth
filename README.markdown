@@ -8,7 +8,7 @@
 
 # Running Tests #
 
-Create a file test/oauth/twitter_keys.clj that contains the consumer key and secret you obtained from http://twitter.com/oauth_clients/new
+Create a file test/oauth/twitter_keys.clj that contains the consumer key and secret.
 
 ``` clojure
 (def consumer-key "blah")
@@ -22,13 +22,13 @@ Create a file test/oauth/twitter_keys.clj that contains the consumer key and sec
     (require ['oauth.client :as 'oauth])
     
     ;; Create a Consumer, in this case one to access Twitter.
-    ;; Register an application at Twitter (http://api.twitter.com/oauth_clients/new)
+    ;; Register an application at Twitter (https://dev.twitter.com/apps/new)
     ;; to obtain a Consumer token and token secret.
     (def consumer (oauth/make-consumer <consumer-token>
                                        <consumer-token-secret>
-                                       "http://api.twitter.com/oauth/request_token"
-                                       "http://api.twitter.com/oauth/access_token"
-                                       "http://api.twitter.com/oauth/authorize"
+                                       "https://api.twitter.com/oauth/request_token"
+                                       "https://api.twitter.com/oauth/access_token"
+                                       "https://api.twitter.com/oauth/authorize"
                                        :hmac-sha1))
 
     ;; Fetch a request token that a OAuth User may authorize
