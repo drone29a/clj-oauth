@@ -2,6 +2,10 @@
 
 `clj-oauth` provides [OAuth](http://oauth.net) Client support for Clojure programs.
 
+# Installing #
+
+Add `[clj-oauth "1.5.0"]` as a Leiningen dependency to get the latest release.
+
 # Building #
 
 `lein jar`
