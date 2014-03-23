@@ -60,11 +60,13 @@ to approve the Consumer's access to their account."
                                  "Content: " (:body m))))
       m)))
 
-(defn build-request [oauth-params & [form-params]]
+(defn build-request 
+  "Construct request from prepared paramters."
+  [oauth-params & [form-params]]
   (let [req (merge
              {:headers {"Authorization" (authorization-header
                                          oauth-params)}}
-             (if form-params {:form-params form-params}))]
+             (when form-params {:form-params form-params}))]
     req))
 
 (defn post-request-body-decoded [url & [req]]
@@ -92,28 +94,31 @@ Authorization HTTP header or added as query parameters to the request."
                                token-secret)]
        (assoc unsigned-oauth-params :oauth_signature signature))))
 
-(defn- get-oauth-token
-  ([consumer uri unsigned-params & [token-secret]]
+(defn build-oauth-token-request
+  "Used to build actual OAuth request."
+  ([consumer uri unsigned-oauth-params & [extra-params token-secret]]
      (let [signature (sig/sign consumer
-                               (sig/base-string "POST" uri unsigned-params)
+                               (sig/base-string "POST" uri (merge unsigned-oauth-params extra-params))
                                token-secret)
-           params (assoc unsigned-params :oauth_signature signature)]
-       (post-request-body-decoded uri (build-request params)))))
+           oauth-params (assoc unsigned-oauth-params :oauth_signature signature)]
+       (build-request oauth-params extra-params))))
 
 (defn request-token
   "Fetch request token for the consumer."
   ([consumer]
-     (request-token consumer nil))
-
+     (request-token consumer "oob" nil))
   ([consumer callback-uri]
-     (let [unsigned-params (sig/oauth-params consumer
-                                             (sig/rand-str 30)
-                                             (sig/msecs->secs (System/currentTimeMillis)))
-           unsigned-params (if callback-uri
-                             (assoc unsigned-params
-                               :oauth_callback callback-uri)
-                             unsigned-params)]
-       (get-oauth-token consumer (:request-uri consumer) unsigned-params))))
+     (request-token consumer callback-uri nil))
+  ([consumer callback-uri extra-params]
+     (let [unsigned-params (-> (sig/oauth-params consumer
+                                                 (sig/rand-str 30)
+                                                 (sig/msecs->secs (System/currentTimeMillis)))
+                               (assoc :oauth_callback callback-uri))]
+       (post-request-body-decoded (:request-uri consumer) 
+                                  (build-oauth-token-request consumer 
+                                                             (:request-uri consumer) 
+                                                             unsigned-params 
+                                                             extra-params)))))
 
 (defn access-token
   "Exchange a request token for an access token.
@@ -122,19 +127,24 @@ Authorization HTTP header or added as query parameters to the request."
   ([consumer request-token]
      (access-token consumer request-token nil))
   ([consumer request-token verifier]
-     (let [unsigned-params (if verifier
-                             (sig/oauth-params consumer
-                                               (sig/rand-str 30)
-                                               (sig/msecs->secs (System/currentTimeMillis))
-                                               (:oauth_token request-token)
-                                               verifier)
-                             (sig/oauth-params consumer
-                                               (sig/rand-str 30)
-                                               (sig/msecs->secs (System/currentTimeMillis))
-                                               (:oauth_token
-                                                request-token)))
+     (let [unsigned-oauth-params (if verifier
+                                   (sig/oauth-params consumer
+                                                     (sig/rand-str 30)
+                                                     (sig/msecs->secs (System/currentTimeMillis))
+                                                     (:oauth_token request-token)
+                                                     verifier)
+                                   (sig/oauth-params consumer
+                                                     (sig/rand-str 30)
+                                                     (sig/msecs->secs (System/currentTimeMillis))
+                                                     (:oauth_token
+                                                      request-token)))
            token-secret (:oauth_token_secret request-token)]
-       (get-oauth-token consumer (:access-uri consumer) unsigned-params token-secret))))
+       (post-request-body-decoded (:access-uri consumer) 
+                                  (build-oauth-token-request consumer 
+                                                             (:access-uri consumer) 
+                                                             unsigned-oauth-params 
+                                                             nil 
+                                                             token-secret)))))
 
 (defn build-xauth-access-token-request
   [consumer username password nonce timestamp]

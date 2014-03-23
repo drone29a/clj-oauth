@@ -1,3 +1,10 @@
+* 1.5.0
+
+- Add support for extra params to `request-token` used by Etsy.
+- Use Clojure 1.5 and clj-http 0.9.1
+
+* 1.4.1
+
 * 1.4.0
 
 - Use Clojure 1.4, Lein 2, and clj-http 0.5.3.
