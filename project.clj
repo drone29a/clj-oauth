@@ -1,4 +1,4 @@
-(defproject clj-oauth "1.5.1"
+(defproject clj-oauth "1.5.2-SNAPSHOT"
   :description "OAuth support for Clojure"
   :dependencies [[org.clojure/clojure "1.5.0"]
                  [commons-codec/commons-codec "1.8"]
