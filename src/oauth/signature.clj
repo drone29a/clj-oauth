@@ -2,7 +2,8 @@
     #^{:author "Matt Revelle"
        :doc "OAuth client library for Clojure."}
   oauth.signature
-  (:import org.apache.commons.codec.binary.Base64)
+  (:import org.apache.commons.codec.binary.Base64
+           org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter)
   (:require [oauth.digest :as digest])
   (:use [clojure.string :only [join]]))
 
@@ -68,14 +69,20 @@
   [c base-string & [token-secret]]
   (str (url-encode (:secret c)) "&" (url-encode (or token-secret ""))))
 
+(def ^:private pem-converter
+  (doto (JcaPEMKeyConverter.)
+    (.setProvider "BC")))
+
 (defmethod sign :rsa-sha1
   [c ^String base-string & [token-secret]]
   (java.security.Security/addProvider
     (org.bouncycastle.jce.provider.BouncyCastleProvider.))
-  (let [private-key (-> (:secret c)
-                        java.io.StringReader.
-                        org.bouncycastle.openssl.PEMReader.
-                        .readObject
+  (let [key-pair (-> (:secret c)
+                     java.io.StringReader.
+                     org.bouncycastle.openssl.PEMParser.
+                     .readObject)
+        private-key (-> ^JcaPEMKeyConverter pem-converter
+                        (.getKeyPair key-pair)
                         .getPrivate)
         signer (doto (java.security.Signature/getInstance "SHA1withRSA" "BC")
                  (.initSign private-key (java.security.SecureRandom.))
