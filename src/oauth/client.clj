@@ -145,21 +145,24 @@ Authorization HTTP header or added as query parameters to the request."
                                                              unsigned-oauth-params 
                                                              nil 
                                                              token-secret)))))
-
 (defn build-xauth-access-token-request
-  [consumer username password nonce timestamp]
-  (let [oauth-params (sig/oauth-params consumer nonce timestamp)
-        post-params {:x_auth_username username
-                     :x_auth_password password
-                     :x_auth_mode "client_auth"}
-        signature (sig/sign consumer
-                            (sig/base-string "POST"
-                                             (:access-uri consumer)
-                                             (merge oauth-params
-                                                    post-params)))
-        params (assoc oauth-params
-                 :oauth_signature signature)]
-    (build-request params post-params)))
+  ([consumer username password nonce timestamp]
+   (build-xauth-access-token-request consumer nil username password nonce timestamp))
+  ([consumer {token :oauth_token secret :oauth_token_secret} username password nonce timestamp]
+   (let [oauth-params (if token
+                        (sig/oauth-params consumer nonce timestamp token)
+                        (sig/oauth-params consumer nonce timestamp))
+         post-params {:x_auth_username username
+                      :x_auth_password password
+                      :x_auth_mode "client_auth"}
+         signature-base (sig/base-string "POST"
+                                         (:access-uri consumer)
+                                         (merge oauth-params
+                                                post-params))
+         signature (if secret (sig/sign consumer signature-base secret) (sig/sign consumer signature-base))
+         params (assoc oauth-params
+                       :oauth_signature signature)]
+     (build-request params post-params))))
 
 (defn refresh-token
   "Exchange an expired access token for a new access token."
