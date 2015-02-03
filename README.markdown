@@ -4,7 +4,7 @@
 
 # Installing #
 
-Add `[clj-oauth "1.5.1"]` as a Leiningen dependency to get the latest release.
+Add `[clj-oauth "1.5.2"]` as a Leiningen dependency to get the latest release.
 
 # Building #
 
@@ -71,7 +71,7 @@ Create a file test/oauth/twitter_keys.clj that contains the consumer key and sec
 
     ;; Post with clj-http...
     (http/post "http://api.twitter.com/1.1/statuses/update.json" 
-               :query-params credentials)
+               {:query-params credentials})
                                          
     ;; ...or with clojure-twitter (http://github.com/mattrepl/clojure-twitter)
     (require 'twitter)
