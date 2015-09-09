@@ -1,4 +1,4 @@
-(defproject clj-oauth "1.5.3"
+(defproject clj-oauth "1.5.4-SNAPSHOT"
   :url "https://github.com/mattrepl/clj-oauth"
   :license {:name "Eclipse Public License - v 1.0"
             :url "http://www.eclipse.org/legal/epl-v10.html"
