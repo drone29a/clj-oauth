@@ -4,7 +4,7 @@
 
 # Installing #
 
-Add `[clj-oauth "1.5.3"]` as a Leiningen dependency to get the latest release.
+Add `[clj-oauth "1.5.4"]` as a Leiningen dependency to get the latest release.
 
 # Building #
 

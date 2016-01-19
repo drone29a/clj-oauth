@@ -1,3 +1,7 @@
+* 1.5.4
+
+- Updated Clojure, bouncycastle, and clj-http dependencies.
+
 * 1.5.3 (SNAPSHOT)
 
 - Updated dependencies.
