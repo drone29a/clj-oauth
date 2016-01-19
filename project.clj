@@ -5,8 +5,8 @@
             :distribution :repo
             :comments "same as Clojure"}
   :description "OAuth support for Clojure"
-  :dependencies [[org.clojure/clojure "1.6.0"]
+  :dependencies [[org.clojure/clojure "1.7.0"]
                  [commons-codec/commons-codec "1.8"]
-                 [org.bouncycastle/bcprov-jdk15on "1.50"]
-                 [org.bouncycastle/bcpkix-jdk15on "1.50"]
+                 [org.bouncycastle/bcprov-jdk15on "1.54"]
+                 [org.bouncycastle/bcpkix-jdk15on "1.54"]
                  [clj-http "1.0.1"]])
