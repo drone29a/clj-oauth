@@ -9,4 +9,4 @@
                  [commons-codec/commons-codec "1.8"]
                  [org.bouncycastle/bcprov-jdk15on "1.54"]
                  [org.bouncycastle/bcpkix-jdk15on "1.54"]
-                 [clj-http "1.0.1"]])
+                 [clj-http "2.0.1"]])
