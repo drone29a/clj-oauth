@@ -26,7 +26,7 @@
   (is (= {:form-params {:x_auth_username "oauth_test_exec",
                         :x_auth_password "twitter-xauth",
                         :x_auth_mode "client_auth"},
-          :headers {"Authorization" "OAuth oauth_signature=\"1L1oXQmawZAkQ47FHLwcOV%2Bkjwc%3D\", oauth_consumer_key=\"JvyS7DO2qd6NNTsXJ4E7zA\", oauth_signature_method=\"HMAC-SHA1\", oauth_timestamp=\"1284565601\", oauth_nonce=\"6AN2dKRzxyGhmIXUKSmp1JcB4pckM8rD3frKMTmVAo\", oauth_version=\"1.0\""}}
+          :headers {"Authorization" "OAuth oauth_consumer_key=\"JvyS7DO2qd6NNTsXJ4E7zA\", oauth_signature_method=\"HMAC-SHA1\", oauth_timestamp=\"1284565601\", oauth_nonce=\"6AN2dKRzxyGhmIXUKSmp1JcB4pckM8rD3frKMTmVAo\", oauth_version=\"1.0\", oauth_signature=\"1L1oXQmawZAkQ47FHLwcOV%2Bkjwc%3D\""}}
          (oc/build-xauth-access-token-request consumer
                                               "oauth_test_exec"
                                               "twitter-xauth"
