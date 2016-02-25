@@ -24,9 +24,11 @@
 (defn user-approval-uri
   "Builds the URI to the Service Provider where the User will be prompted
 to approve the Consumer's access to their account."
-  [consumer token]
-  (str (:authorize-uri consumer)
-       "?" (httpclient/generate-query-string {:oauth_token token})))
+  ([consumer token]
+   (user-approval-uri consumer token {}))
+  ([consumer token extra-params]
+   (str (:authorize-uri consumer)
+        "?" (httpclient/generate-query-string (merge {:oauth_token token} extra-params)))))
 
 (defn authorization-header
   "OAuth credentials formatted for the Authorization HTTP header."
