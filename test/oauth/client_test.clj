@@ -64,7 +64,9 @@
         t "nnch734d00sl2jdk"]
     ;; The approval URL should only use the :oauth_token in the User approval URI
     (is (= "https://api.twitter.com/oauth/authorize?oauth_token=nnch734d00sl2jdk"
-           (oc/user-approval-uri c t)))))
+           (oc/user-approval-uri c t)))
+    (is (= "https://api.twitter.com/oauth/authorize?oauth_token=nnch734d00sl2jdk&extra=foo"
+           (oc/user-approval-uri c t {:extra "foo"})))))
 
 (deftest ^{:doc "Test creation of authorization header for refresh access_token request"}
   refresh-token-authorization-header

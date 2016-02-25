@@ -23,7 +23,7 @@
 
 (defn user-approval-uri
   "Builds the URI to the Service Provider where the User will be prompted
-to approve the Consumer's access to their account."
+to approve the Consumer's access to their account. A map of extra parameters may be included."
   ([consumer token]
    (user-approval-uri consumer token {}))
   ([consumer token extra-params]
