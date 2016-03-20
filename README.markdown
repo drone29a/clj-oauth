@@ -62,16 +62,17 @@ Create a file test/oauth/twitter_keys.clj that contains the consumer key and sec
     ;; credentials are returned as a map of all OAuth parameters that must be
     ;; included with the request as either query parameters or in an
     ;; Authorization HTTP header.
+    (def user-params {:status "posting from #clojure with #oauth"})
     (def credentials (oauth/credentials consumer
                                         (:oauth_token access-token-response)
                                         (:oauth_token_secret access-token-response)
                                         :POST
-                                        "http://api.twitter.com/1.1/statuses/update.json"
-                                        {:status "posting from #clojure with #oauth"}))
+                                        "https://api.twitter.com/1.1/statuses/update.json"
+                                        user-params))
 
     ;; Post with clj-http...
-    (http/post "http://api.twitter.com/1.1/statuses/update.json" 
-               {:query-params credentials})
+    (http/post "https://api.twitter.com/1.1/statuses/update.json" 
+               {:query-params (merge credentials user-params})
                                          
     ;; ...or with clojure-twitter (http://github.com/mattrepl/clojure-twitter)
     (require 'twitter)
