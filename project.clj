@@ -1,9 +1,8 @@
 (defproject clj-oauth "1.5.6-SNAPSHOT"
   :url "https://github.com/mattrepl/clj-oauth"
-  :license {:name "Eclipse Public License - v 1.0"
-            :url "http://www.eclipse.org/legal/epl-v10.html"
-            :distribution :repo
-            :comments "same as Clojure"}
+  :license {:name "Simplified BSD License"
+            :url "https://opensource.org/licenses/BSD-2-Clause"
+            :distribution :repo}
   :description "OAuth support for Clojure"
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [commons-codec/commons-codec "1.8"]
