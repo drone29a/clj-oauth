@@ -10,6 +10,7 @@
 (defrecord #^{:doc "OAuth consumer"}
     Consumer [key secret request-uri
               access-uri authorize-uri signature-method])
+
 (defn make-consumer
   "Make a consumer struct map."
   [key secret request-uri access-uri authorize-uri signature-method]
@@ -54,14 +55,6 @@ to approve the Consumer's access to their account. A map of extra parameters may
                    [(keyword (sig/url-decode k)) (sig/url-decode v)]))
                (split s #"&")))))
 
-(defn- check-success-response [m]
-  (let [code (:status m)]
-    (if (or (< code 200)
-            (>= code 300))
-      (throw (new Exception (str "Got non-success code: " code ". "
-                                 "Content: " (:body m))))
-      m)))
-
 (defn build-request 
   "Construct request from prepared paramters."
   [oauth-params & [form-params]]
@@ -71,10 +64,25 @@ to approve the Consumer's access to their account. A map of extra parameters may
              (when form-params {:form-params form-params}))]
     req))
 
-(defn post-request-body-decoded [url & [req]]
-  (form-decode
-   (:body (check-success-response
-           (httpclient/post url req)))))
+(defn post-request-body-decoded
+  "Get a response from token providers, then return a response map which decoded its body.
+  Throws:
+    clojure.lang.ExceptionInfo (Extended RuntimeException)
+      When a response from its token provider is returned with status code 4xx or 3xx, clj-http will throw this exception to wrap its actual response body.
+      If you will use this function with ExceptionInfo:
+  
+        (try
+          ;; Consider do-something is including the post-request-body-decoded function.
+          (do-something ...)
+          (catch ExceptionInfo e
+            (some-error-handler (ex-data e))))
+  
+      But this code should be used in the application side because ExceptionInfo is RuntimeException. Otherwise means that ExceptionInfo thrown from clj-http has been replaced to other exceptions by other libraries side. We should consider it is not so good thing."
+  [url & [req]]
+  (let [res (httpclient/post url req)]
+    (update res
+            :body
+            (form-decode (:body res)))))
 
 (defn credentials
   "Return authorization credentials needed for access to protected resources.
@@ -147,6 +155,7 @@ Authorization HTTP header or added as query parameters to the request."
                                                              unsigned-oauth-params 
                                                              nil 
                                                              token-secret)))))
+
 (defn build-xauth-access-token-request
   ([consumer username password nonce timestamp]
    (build-xauth-access-token-request consumer nil username password nonce timestamp))
