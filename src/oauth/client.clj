@@ -62,7 +62,7 @@ to approve the Consumer's access to their account. A map of extra parameters may
                                  "Content: " (:body m))))
       m)))
 
-(defn build-request 
+(defn build-request
   "Construct request from prepared paramters."
   [oauth-params & [form-params]]
   (let [req (merge
@@ -116,10 +116,10 @@ Authorization HTTP header or added as query parameters to the request."
                                                  (sig/rand-str 30)
                                                  (sig/msecs->secs (System/currentTimeMillis)))
                                (assoc :oauth_callback callback-uri))]
-       (post-request-body-decoded (:request-uri consumer) 
-                                  (build-oauth-token-request consumer 
-                                                             (:request-uri consumer) 
-                                                             unsigned-params 
+       (post-request-body-decoded (:request-uri consumer)
+                                  (build-oauth-token-request consumer
+                                                             (:request-uri consumer)
+                                                             unsigned-params
                                                              extra-params)))))
 
 (defn access-token
@@ -141,11 +141,11 @@ Authorization HTTP header or added as query parameters to the request."
                                                      (:oauth_token
                                                       request-token)))
            token-secret (:oauth_token_secret request-token)]
-       (post-request-body-decoded (:access-uri consumer) 
-                                  (build-oauth-token-request consumer 
-                                                             (:access-uri consumer) 
-                                                             unsigned-oauth-params 
-                                                             nil 
+       (post-request-body-decoded (:access-uri consumer)
+                                  (build-oauth-token-request consumer
+                                                             (:access-uri consumer)
+                                                             unsigned-oauth-params
+                                                             nil
                                                              token-secret)))))
 (defn build-xauth-access-token-request
   ([consumer username password nonce timestamp]
@@ -168,19 +168,27 @@ Authorization HTTP header or added as query parameters to the request."
 
 (defn refresh-token
   "Exchange an expired access token for a new access token."
-  [consumer expired-token]
-  (let [unsigned-params (assoc (sig/oauth-params consumer
-                                                 (:oauth_token expired-token))
-                          :oauth_session_handle (:oauth_session_handle expired-token))
-        signature (sig/sign consumer
-                            (sig/base-string "POST"
-                                             (:access-uri consumer)
-                                             unsigned-params)
-                            (:oauth_token_secret expired-token))
-        params (assoc unsigned-params
-                 :oauth_signature signature)]
-    (post-request-body-decoded (:access-uri consumer)
-                               (build-request params {:use-expect-continue false}))))
+  ([consumer expired-token]
+   (refresh-token consumer expired-token nil))
+  ([consumer expired-token verifier]
+   (let [base-oauth-params (if verifier
+                             (sig/oauth-params consumer
+                                               (sig/rand-str 30)
+                                               (sig/msecs->secs (System/currentTimeMillis))
+                                               (:oauth_token expired-token)
+                                               verifier)
+                             (sig/oauth-params consumer
+                                               (sig/rand-str 30)
+                                               (sig/msecs->secs (System/currentTimeMillis))
+                                               (:oauth_token expired-token)))
+         unsigned-oauth-params (assoc base-oauth-params
+                                 :oauth_session_handle (:oauth_session_handle expired-token))]
+     (post-request-body-decoded (:access-uri consumer)
+                                (build-oauth-token-request consumer
+                                                           (:access-uri consumer)
+                                                           unsigned-oauth-params
+                                                           nil
+                                                           (:oauth_token_secret expired-token))))))
 
 (defn xauth-access-token
   "Request an access token with a username and password with xAuth."
