@@ -6,3 +6,4 @@ classes
 pom.xml
 .lein-*
 
+test/oauth/twitter_keys.clj

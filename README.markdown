@@ -15,8 +15,8 @@ Add `[clj-oauth "1.5.5"]` as a Leiningen dependency to get the latest release.
 Create a file test/oauth/twitter_keys.clj that contains the consumer key and secret.
 
 ``` clojure
-(def consumer-key "blah")
-(def consumer-secret "itsasecret")
+(def key "blah")
+(def secret "itsasecret")
 ```
 
 `lein test`
