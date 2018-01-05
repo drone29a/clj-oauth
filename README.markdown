@@ -72,7 +72,7 @@ Create a file test/oauth/twitter_keys.clj that contains the consumer key and sec
 
     ;; Post with clj-http...
     (http/post "https://api.twitter.com/1.1/statuses/update.json" 
-               {:query-params (merge credentials user-params)}
+               {:form-params (merge credentials user-params)}
                                          
     ;; ...or with clojure-twitter (http://github.com/mattrepl/clojure-twitter)
     (require 'twitter)
