@@ -5,7 +5,7 @@
             :distribution :repo}
   :description "OAuth support for Clojure"
   :dependencies [[org.clojure/clojure "1.7.0"]
-                 [commons-codec/commons-codec "1.8"]
-                 [clj-http "2.0.1"]])
+                 [clj-http "3.7.0"]
+                 [commons-codec/commons-codec "1.10"] ; pin to same version as clj-http
                  [org.bouncycastle/bcprov-jdk15on "1.59"]
-                 [org.bouncycastle/bcpkix-jdk15on "1.59"]
+                 [org.bouncycastle/bcpkix-jdk15on "1.59"]])
