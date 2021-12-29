@@ -34,6 +34,7 @@
   (int (/ millis 1000)))
 
 (def signature-methods {:hmac-sha1 "HMAC-SHA1"
+                        :hmac-sha256 "HMAC-SHA256"
                         :rsa-sha1 "RSA-SHA1"
                         :plaintext "PLAINTEXT"})
 
@@ -63,7 +64,12 @@
 (defmethod sign :hmac-sha1
   [c base-string & [token-secret]]
   (let [key (str (url-encode (:secret c)) "&" (url-encode (or token-secret "")))]
-      (digest/hmac key base-string)))
+    (digest/hmac-sign key base-string "HmacSHA1")))
+
+(defmethod sign :hmac-sha256
+  [c base-string & [token-secret]]
+  (let [key (str (url-encode (:secret c)) "&" (url-encode (or token-secret "")))]
+    (digest/hmac-sign key base-string "HmacSHA256")))
 
 (defmethod sign :plaintext
   [c base-string & [token-secret]]
