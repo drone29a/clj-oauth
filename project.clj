@@ -1,5 +1,5 @@
 (defproject clj-oauth "1.5.6-SNAPSHOT"
-  :url "https://github.com/mattrepl/clj-oauth"
+  :url "https://github.com/drone-rites/clj-oauth"
   :license {:name "Simplified BSD License"
             :url "https://opensource.org/licenses/BSD-2-Clause"
             :distribution :repo}
