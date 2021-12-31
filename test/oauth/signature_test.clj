@@ -152,6 +152,67 @@
                    "J6zix3FfA9LofH0awS24M3HcBYXO5nI1iYe8EfBA")
          "yOahq5m0YjDDjfjxHaXEsW9D+X0=")))
 
+(deftest
+  #^{:doc "Test hmac-sha256 signing of a request."}
+  hmac-sha256-signature
+
+  (is (= (sig/sign {:key "dpf43f3p2l4k3l03"
+                    :secret "kd94hf93k423kf44"
+                    :signature-method :hmac-sha256}
+                   (sig/base-string "GET"
+                                    "http://photos.example.net/photos"
+                                    {:oauth_consumer_key "dpf43f3p2l4k3l03"
+                                     :oauth_token "nnch734d00sl2jdk"
+                                     :oauth_signature_method "HMAC-SHA256"
+                                     :oauth_timestamp "1191242096"
+                                     :oauth_nonce "kllo9940pd9333jh"
+                                     :oauth_version "1.0"
+                                     :file "vacation.jpg"
+                                     :size "original"})
+                   "pfkkdhi9sl3r4s00")
+         "WVPzl1j6ZsnkIjWr7e3OZ3jkenL57KwaLFhYsroX1hg="))
+
+  ;; Taken from Twitter dev example.
+  (is (= (sig/sign {:signature-method :hmac-sha256
+                    :secret "MCD8BKwGdgPHvAuvgvz4EQpqDAtx89grbuNMRd7Eh98"}
+                   (sig/base-string "POST"
+                                    "https://api.twitter.com/oauth/request_token"
+                                    {:oauth_callback "http://localhost:3005/the_dance/process_callback?service_provider_id=11"
+                                     :oauth_consumer_key "GDdmIQH6jhtmLUypg82g"
+                                     :oauth_nonce "QP70eNmVz8jvdPevU3oJD2AfF7R7odC2XJcn4XlZJqk"
+                                     :oauth_signature_method "HMAC-SHA256"
+                                     :oauth_timestamp "1272323042"
+                                     :oauth_version "1.0"}))
+         "N0KBpiPbuPIMx2B77eIg7tNfGNF81iq3bcO9RO6lH+k="))
+
+  (is (= (sig/sign {:signature-method :hmac-sha256
+                    :secret "MCD8BKwGdgPHvAuvgvz4EQpqDAtx89grbuNMRd7Eh98"}
+                   (sig/base-string "POST"
+                                    "https://api.twitter.com/oauth/access_token"
+                                    {:oauth_consumer_key "GDdmIQH6jhtmLUypg82g"
+                                     :oauth_nonce "9zWH6qe0qG7Lc1telCn7FhUbLyVdjEaL3MO5uHxn8"
+                                     :oauth_signature_method "HMAC-SHA256"
+                                     :oauth_token "8ldIZyxQeVrFZXFOZH5tAwj6vzJYuLQpl0WUEYtWc"
+                                     :oauth_timestamp "1272323047"
+                                     :oauth_verifier "pDNg57prOHapMbhv25RNf75lVRd6JDsni1AJJIDYoTY"
+                                     :oauth_version "1.0"})
+                   "x6qpRnlEmW9JbQn4PQVVeVG8ZLPEx6A0TOebgwcuA")
+         "y7S9eUhA0tC9/YfRzCPqkg3/bUdYRDpZ93Xi51AvhjQ="))
+
+  (is (= (sig/sign {:signature-method :hmac-sha256
+                    :secret "MCD8BKwGdgPHvAuvgvz4EQpqDAtx89grbuNMRd7Eh98"}
+                   (sig/base-string "POST"
+                                    "http://api.twitter.com/1/statuses/update.json"
+                                    {:oauth_consumer_key "GDdmIQH6jhtmLUypg82g"
+                                     :oauth_nonce "oElnnMTQIZvqvlfXM56aBLAf5noGD0AQR3Fmi7Q6Y"
+                                     :oauth_signature_method "HMAC-SHA256"
+                                     :oauth_timestamp "1272325550"
+                                     :oauth_token "819797-Jxq8aYUDRmykzVKrgoLhXSq67TEa5ruc4GJC2rWimw"
+                                     :oauth_version "1.0"
+                                     :status "setting up my twitter 私のさえずりを設定する"})
+                   "J6zix3FfA9LofH0awS24M3HcBYXO5nI1iYe8EfBA")
+         "xYhKjozxc3NYef7C26WU+gORdhEURdZRxSDzRttEKH0=")))
+
 (deftest rsa-sha1-signature
   (let [c {:secret
            "-----BEGIN RSA PRIVATE KEY-----

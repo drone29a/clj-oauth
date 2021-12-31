@@ -2,7 +2,8 @@
 .*.sw*
 lib
 classes
+target
+test/oauth/twitter_keys.clj
 *.jar
 pom.xml
 .lein-*
-
