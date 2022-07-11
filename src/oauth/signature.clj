@@ -75,9 +75,9 @@
   [c base-string & [token-secret]]
   (str (url-encode (:secret c)) "&" (url-encode (or token-secret ""))))
 
-(def ^:private pem-converter
-  (doto (JcaPEMKeyConverter.)
-    (.setProvider "BC")))
+(def ^:private pem-converter (delay
+                               (doto (JcaPEMKeyConverter.)
+                                 (.setProvider "BC"))))
 
 (defmethod sign :rsa-sha1
   [c ^String base-string & [token-secret]]
@@ -87,7 +87,7 @@
                      java.io.StringReader.
                      org.bouncycastle.openssl.PEMParser.
                      .readObject)
-        private-key (-> ^JcaPEMKeyConverter pem-converter
+        private-key (-> ^JcaPEMKeyConverter @pem-converter
                         (.getKeyPair key-pair)
                         .getPrivate)
         signer (doto (java.security.Signature/getInstance "SHA1withRSA" "BC")
