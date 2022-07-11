@@ -21,12 +21,12 @@
     (name a)
     (str a)))
 
-(def secure-random (java.security.SecureRandom/getInstance "SHA1PRNG"))
+(def secure-random (delay (java.security.SecureRandom/getInstance "SHA1PRNG")))
 
 (defn rand-str
   "Random string for OAuth requests."
   [length]
-  (. (new BigInteger (int (* 5 length)) ^java.util.Random secure-random) toString 32))
+  (. (new BigInteger (int (* 5 length)) ^java.util.Random @secure-random) toString 32))
 
 (defn msecs->secs
   "Convert milliseconds to seconds."
