@@ -21,12 +21,12 @@
     (name a)
     (str a)))
 
-(def secure-random (java.security.SecureRandom/getInstance "SHA1PRNG"))
+(def secure-random (delay (java.security.SecureRandom/getInstance "SHA1PRNG")))
 
 (defn rand-str
   "Random string for OAuth requests."
   [length]
-  (. (new BigInteger (int (* 5 length)) ^java.util.Random secure-random) toString 32))
+  (. (new BigInteger (int (* 5 length)) ^java.util.Random @secure-random) toString 32))
 
 (defn msecs->secs
   "Convert milliseconds to seconds."
@@ -75,9 +75,9 @@
   [c base-string & [token-secret]]
   (str (url-encode (:secret c)) "&" (url-encode (or token-secret ""))))
 
-(def ^:private pem-converter
-  (doto (JcaPEMKeyConverter.)
-    (.setProvider "BC")))
+(def ^:private pem-converter (delay
+                               (doto (JcaPEMKeyConverter.)
+                                 (.setProvider "BC"))))
 
 (defmethod sign :rsa-sha1
   [c ^String base-string & [token-secret]]
@@ -87,7 +87,7 @@
                      java.io.StringReader.
                      org.bouncycastle.openssl.PEMParser.
                      .readObject)
-        private-key (-> ^JcaPEMKeyConverter pem-converter
+        private-key (-> ^JcaPEMKeyConverter @pem-converter
                         (.getKeyPair key-pair)
                         .getPrivate)
         signer (doto (java.security.Signature/getInstance "SHA1withRSA" "BC")

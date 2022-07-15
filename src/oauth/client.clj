@@ -2,9 +2,9 @@
     #^{:author "Matt Revelle"
        :doc "OAuth client library for Clojure."}
   oauth.client
-  (:require [oauth.digest :as digest]
-            [oauth.signature :as sig]
-            [clj-http.client :as httpclient])
+  (:require [oauth.signature :as sig]
+            [clj-http.client :as httpclient]
+            [cemerick.url :refer [url]])
   (:use [clojure.string :only [join split upper-case]]))
 
 (defrecord #^{:doc "OAuth consumer"}
@@ -105,6 +105,18 @@ Authorization HTTP header or added as query parameters to the request."
            oauth-params (assoc unsigned-oauth-params :oauth_signature signature)]
        (build-request oauth-params extra-params))))
 
+(defn override-host [original-url host]
+  (when original-url
+    (-> original-url
+        url
+        (assoc :host host)
+        str)))
+
+(defn override-uri [consumer uri-key]
+  (if-let [host (:override-host consumer)]
+    (override-host (get consumer uri-key) host)
+    (get consumer uri-key)))
+
 (defn request-token
   "Fetch request token for the consumer."
   ([consumer]
@@ -116,7 +128,7 @@ Authorization HTTP header or added as query parameters to the request."
                                                  (sig/rand-str 30)
                                                  (sig/msecs->secs (System/currentTimeMillis)))
                                (assoc :oauth_callback callback-uri))]
-       (post-request-body-decoded (:request-uri consumer)
+       (post-request-body-decoded (override-uri consumer :request-uri)
                                   (build-oauth-token-request consumer
                                                              (:request-uri consumer)
                                                              unsigned-params
@@ -141,7 +153,7 @@ Authorization HTTP header or added as query parameters to the request."
                                                      (:oauth_token
                                                       request-token)))
            token-secret (:oauth_token_secret request-token)]
-       (post-request-body-decoded (:access-uri consumer)
+       (post-request-body-decoded (override-uri consumer :access-uri)
                                   (build-oauth-token-request consumer
                                                              (:access-uri consumer)
                                                              unsigned-oauth-params
@@ -183,7 +195,7 @@ Authorization HTTP header or added as query parameters to the request."
                                                (:oauth_token expired-token)))
          unsigned-oauth-params (assoc base-oauth-params
                                  :oauth_session_handle (:oauth_session_handle expired-token))]
-     (post-request-body-decoded (:access-uri consumer)
+     (post-request-body-decoded (override-uri consumer :access-uri)
                                 (build-oauth-token-request consumer
                                                            (:access-uri consumer)
                                                            unsigned-oauth-params
@@ -193,7 +205,7 @@ Authorization HTTP header or added as query parameters to the request."
 (defn xauth-access-token
   "Request an access token with a username and password with xAuth."
   [consumer username password]
-  (post-request-body-decoded (:access-uri consumer)
+  (post-request-body-decoded (override-uri consumer :access-uri)
                              (build-xauth-access-token-request consumer
                                                                username
                                                                password
